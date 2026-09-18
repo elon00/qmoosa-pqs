@@ -1,0 +1,79 @@
+{
+  "schema": "qmoosa.qpu.certification.v1",
+  "started_at": "2026-09-18T13:24:12.365907+00:00",
+  "repo": "elon00/qmoosa-pqs",
+  "commit": "284cf5a0b87c97c4fd9877009996669acf5ad736",
+  "canonical_control_plane": "elon00/bountyhunter-os",
+  "status": "BLOCKED",
+  "gates": {
+    "R0_CLAIM": {
+      "status": "PASS",
+      "evidence": {
+        "schema": "qmoosa.qpu.manifest.v1",
+        "repo": "elon00/qmoosa-pqs",
+        "commit": "284cf5a0b87c97c4fd9877009996669acf5ad736",
+        "provider": "origin",
+        "backend": "origin_wukong_72q",
+        "shots": 1024,
+        "created_at": "2026-09-18T13:24:12.365962+00:00"
+      }
+    },
+    "R11_CI_CD_VERIFIED": {
+      "status": "PASS",
+      "evidence": "\n..................................................\n----------------------------------------------------------------------\nRan 50 tests in 32.211s\n\nOK\n"
+    },
+    "R8_CIRCUIT_INTEGRITY_VERIFIED": {
+      "status": "PASS",
+      "evidence": {
+        "circuit_sha256": "35d741fe6a832bc2ce2c382e906e225c8f394ce209be22ab5375a802d153a471",
+        "qubits": 2,
+        "gates": 4,
+        "format": "QRunes",
+        "shots": 1024
+      }
+    },
+    "R1_PROVIDER_REACHABLE": {
+      "status": "PASS",
+      "evidence": {
+        "provider": "origin",
+        "endpoint": "https://qcloud.originqc.com.cn/api/task/submit"
+      }
+    },
+    "R2_AUTHENTICATED": {
+      "status": "FAIL",
+      "evidence": {
+        "authenticated": false,
+        "reason": "Origin Cloud rejected token: code=401, message=Unauthorized"
+      }
+    },
+    "R3_JOB_SUBMITTED": {
+      "status": "FAIL",
+      "evidence": "Real submission blocked: valid provider authentication required."
+    },
+    "R4_PROVIDER_JOB_ID_VERIFIED": {
+      "status": "FAIL",
+      "evidence": "No provider-issued job ID: unauthenticated session."
+    },
+    "R5_JOB_COMPLETED": {
+      "status": "FAIL",
+      "evidence": "No cloud job in terminal state."
+    },
+    "R6_PROVIDER_RESULT_RETRIEVED": {
+      "status": "FAIL",
+      "evidence": "No cloud measurement results."
+    },
+    "R7_RESULT_INTEGRITY_VERIFIED": {
+      "status": "FAIL",
+      "evidence": "Result verification blocked."
+    },
+    "R9_PROVIDER_RECEIPT_VERIFIED": {
+      "status": "FAIL",
+      "evidence": "Missing authentic provider receipt."
+    },
+    "R10_INDEPENDENT_RECHECK_VERIFIED": {
+      "status": "FAIL",
+      "evidence": "Independent provider re-query blocked."
+    }
+  },
+  "finished_at": "2026-09-18T13:24:46.305940+00:00"
+}

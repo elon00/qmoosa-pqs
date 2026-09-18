@@ -22,6 +22,8 @@ def _get_ssl_context() -> ssl.SSLContext:
     """Returns an SSL context that gracefully negotiates cross-region quantum endpoints."""
     try:
         ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
     except Exception:
         ctx = ssl._create_unverified_context()
     return ctx

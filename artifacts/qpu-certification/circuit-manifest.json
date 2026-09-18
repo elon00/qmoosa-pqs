@@ -1,0 +1,7 @@
+{
+  "circuit_sha256": "35d741fe6a832bc2ce2c382e906e225c8f394ce209be22ab5375a802d153a471",
+  "qubits": 2,
+  "gates": 4,
+  "format": "QRunes",
+  "shots": 1024
+}
