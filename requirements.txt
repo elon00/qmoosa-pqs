@@ -1,0 +1,6 @@
+# QMoosa-PQ Core Requirements
+# The core synthesis engine, AST, SMT heuristic solver, and agent loop run with ZERO external dependencies (Python 3 standard library).
+# Optional quantum execution backends:
+# qiskit>=1.0.0
+# qiskit-aer>=0.14.0
+# z3-solver>=4.12.0

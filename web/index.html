@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QMoosa-PQ — Autonomous Quantum Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    pre, code { font-family: 'Fira Code', monospace; }
+    .glassmorphism {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(55, 65, 81, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-gray-800 bg-gray-900/60 sticky top-0 z-50 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-atom"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            QMoosa-PQ
+          </h1>
+          <p class="text-xs text-gray-400">Autonomous Quantum Synthesis & PQC Engine</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800/60">
+          <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          REALITY MODE: ACTIVE
+        </span>
+        <span class="text-xs text-gray-400 border border-gray-800 px-2 py-1 rounded bg-gray-900">
+          NIST FIPS 203 / 204
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Chat Prompt & Agent Controls (5 cols) -->
+    <div class="lg:col-span-5 flex flex-col space-y-4">
+      
+      <!-- Quick Prompts Card -->
+      <div class="glassmorphism rounded-xl p-4">
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 flex items-center justify-between">
+          <span>Quick Starters (तुरंत शुरू करें)</span>
+          <i class="fa-solid fa-bolt text-amber-400"></i>
+        </h2>
+        <div class="grid grid-cols-1 gap-2">
+          <button onclick="setPrompt('Create a 3-qubit GHZ entangled state with measurement')" 
+                  class="text-left text-xs p-2 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-cyan-500/50 transition">
+            <span class="font-medium text-cyan-400">3-Qubit GHZ State</span>: 3 क्यूबिट का एंटैंगल्ड स्टेट
+          </button>
+          <button onclick="setPrompt('Build a 4-qubit Grover search circuit with oracle and diffusion')" 
+                  class="text-left text-xs p-2 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-cyan-500/50 transition">
+            <span class="font-medium text-indigo-400">Grover 4-Qubit Search</span>: ग्रोवर सर्च एल्गोरिदम
+          </button>
+          <button onclick="setPrompt('Synthesize a NIST FIPS 203 PQC lattice verification oracle')" 
+                  class="text-left text-xs p-2 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-cyan-500/50 transition">
+            <span class="font-medium text-emerald-400">PQC Lattice Oracle</span>: पोस्ट-क्वांटम लैटिस टेस्ट
+          </button>
+          <button onclick="setPrompt('Generate Shor modular exponentiation block for 4 qubits')" 
+                  class="text-left text-xs p-2 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-cyan-500/50 transition">
+            <span class="font-medium text-purple-400">Shor Algorithm Block</span>: शोर एल्गोरिदम मॉड्यूलर ब्लॉक
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Input Card -->
+      <div class="glassmorphism rounded-xl p-4 flex-1 flex flex-col">
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 flex items-center justify-between">
+          <span>Natural Language Quantum Prompt</span>
+          <i class="fa-regular fa-comment-dots text-cyan-400"></i>
+        </h2>
+        <textarea id="promptInput" rows="5" 
+                  placeholder="यहाँ हिंदी या अंग्रेजी में लिखें... (जैसे: 'Create a 3-qubit Bell state with minimal depth')" 
+                  class="w-full bg-gray-900 text-gray-100 border border-gray-800 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-500 resize-none"></textarea>
+        
+        <div class="mt-3 flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-xs text-gray-400">
+            <label>Topology:</label>
+            <select id="topologySelect" class="bg-gray-900 border border-gray-800 rounded px-2 py-1 text-xs">
+              <option value="all_to_all">All-to-All (Ideal)</option>
+              <option value="linear">Linear Nearest-Neighbor</option>
+            </select>
+          </div>
+          <button id="submitBtn" onclick="synthesizeCircuit()" 
+                  class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-cyan-600/20 transition flex items-center space-x-2">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Synthesize (संश्लेषण)</span>
+          </button>
+        </div>
+
+        <!-- Telemetry Status Box -->
+        <div id="telemetryBox" class="mt-4 p-3 bg-gray-900/80 rounded-lg border border-gray-800/80 text-xs font-mono space-y-1">
+          <div class="text-gray-400 flex justify-between">
+            <span>ENGINE STATUS:</span>
+            <span id="engineStatus" class="text-cyan-400 font-bold">READY</span>
+          </div>
+          <div class="text-gray-400 flex justify-between">
+            <span>LAST VERIFICATION:</span>
+            <span id="lastVerified" class="text-emerald-400">TRUTH PROTOCOL ACTIVE</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Right Column: Outputs, Diagram & Multi-Target Code (7 cols) -->
+    <div class="lg:col-span-7 flex flex-col space-y-4">
+
+      <!-- Metrics Bar -->
+      <div class="grid grid-cols-4 gap-3">
+        <div class="glassmorphism p-3 rounded-xl text-center">
+          <p class="text-[10px] text-gray-400 uppercase font-semibold">Qubits</p>
+          <p id="qubitCount" class="text-xl font-bold text-cyan-400">3</p>
+        </div>
+        <div class="glassmorphism p-3 rounded-xl text-center">
+          <p class="text-[10px] text-gray-400 uppercase font-semibold">Circuit Depth</p>
+          <p id="circuitDepth" class="text-xl font-bold text-indigo-400">3</p>
+        </div>
+        <div class="glassmorphism p-3 rounded-xl text-center">
+          <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Gates</p>
+          <p id="totalGates" class="text-xl font-bold text-emerald-400">4</p>
+        </div>
+        <div class="glassmorphism p-3 rounded-xl text-center">
+          <p class="text-[10px] text-gray-400 uppercase font-semibold">PQC Security</p>
+          <p id="pqcStatus" class="text-xl font-bold text-amber-400">RESISTANT</p>
+        </div>
+      </div>
+
+      <!-- Output Tabs Card -->
+      <div class="glassmorphism rounded-xl flex-1 flex flex-col overflow-hidden">
+        
+        <!-- Tab Navigation -->
+        <div class="flex items-center justify-between border-b border-gray-800 px-4 pt-2 bg-gray-900/40">
+          <div class="flex space-x-2" id="tabButtons">
+            <button onclick="switchTab('diagramTab')" id="btn-diagramTab" class="px-3 py-2 text-xs font-semibold border-b-2 border-cyan-400 text-cyan-400">
+              <i class="fa-solid fa-diagram-project mr-1"></i> Circuit Wire
+            </button>
+            <button onclick="switchTab('qiskitTab')" id="btn-qiskitTab" class="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent">
+              <i class="fa-brands fa-python mr-1"></i> Qiskit Code
+            </button>
+            <button onclick="switchTab('qasmTab')" id="btn-qasmTab" class="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent">
+              <i class="fa-solid fa-code mr-1"></i> OpenQASM 3.0
+            </button>
+            <button onclick="switchTab('originTab')" id="btn-originTab" class="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent">
+              <i class="fa-solid fa-microchip mr-1"></i> Origin Pilot (QRunes)
+            </button>
+            <button onclick="switchTab('pqcTab')" id="btn-pqcTab" class="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent">
+              <i class="fa-solid fa-shield-halved mr-1"></i> PQC Telemetry
+            </button>
+          </div>
+          <button onclick="copyCurrentTabContent()" class="text-xs text-gray-400 hover:text-white p-1">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+
+        <!-- Tab Content Panes -->
+        <div class="p-4 flex-1 overflow-auto max-h-[520px]">
+          
+          <!-- Wire Diagram Tab -->
+          <div id="diagramTab" class="tab-pane">
+            <pre id="diagramContent" class="text-xs text-cyan-300 font-mono bg-gray-900 p-4 rounded-lg overflow-x-auto">q[0]: --[ H ]----*-------------------[out]
+q[1]: -----------(+)----*------------[out]
+q[2]: ------------------(+)--[M]-----[out]
+c   : ==================================</pre>
+          </div>
+
+          <!-- Qiskit Tab -->
+          <div id="qiskitTab" class="tab-pane hidden">
+            <pre id="qiskitContent" class="text-xs text-emerald-300 font-mono bg-gray-900 p-4 rounded-lg overflow-x-auto"># Synthesizing...</pre>
+          </div>
+
+          <!-- QASM Tab -->
+          <div id="qasmTab" class="tab-pane hidden">
+            <pre id="qasmContent" class="text-xs text-purple-300 font-mono bg-gray-900 p-4 rounded-lg overflow-x-auto">// OpenQASM 3.0</pre>
+          </div>
+
+          <!-- Origin Pilot Tab -->
+          <div id="originTab" class="tab-pane hidden">
+            <pre id="originContent" class="text-xs text-amber-300 font-mono bg-gray-900 p-4 rounded-lg overflow-x-auto"># Origin Pilot / QPanda QRunes Specification</pre>
+          </div>
+
+          <!-- PQC Telemetry Tab -->
+          <div id="pqcTab" class="tab-pane hidden space-y-3 text-xs">
+            <div class="bg-gray-900 p-4 rounded-lg border border-gray-800 space-y-2">
+              <h3 class="font-bold text-cyan-400 flex items-center">
+                <i class="fa-solid fa-shield-cat mr-2"></i> NIST Post-Quantum Cryptography Security Bounds
+              </h3>
+              <div class="grid grid-cols-2 gap-2 text-gray-300 font-mono pt-2">
+                <div>Standard: <span id="pqcStandard" class="text-white">NIST FIPS 203</span></div>
+                <div>Algorithm: <span id="pqcAlgo" class="text-white">ML-KEM-768</span></div>
+                <div>Category: <span id="pqcCategory" class="text-white">Level 3 (AES-192 equivalent)</span></div>
+                <div>Classical Bits: <span id="pqcClassical" class="text-white">192 bits</span></div>
+                <div>Quantum Bits: <span id="pqcQuantum" class="text-white">182 bits</span></div>
+                <div>Shor Resilient: <span id="pqcShor" class="text-emerald-400 font-bold">YES</span></div>
+              </div>
+            </div>
+            <div id="optimizerLog" class="bg-gray-900 p-4 rounded-lg border border-gray-800 text-gray-300 font-mono text-[11px]">
+              <!-- Optimization passes will be listed here -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="border-t border-gray-800 py-3 text-center text-xs text-gray-500">
+    QMoosa-PQ Engine • Built for Autonomous Quantum Engineering & Web4 Lattice Security
+  </footer>
+
+  <script>
+    function setPrompt(text) {
+      document.getElementById('promptInput').value = text;
+      synthesizeCircuit();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+
+      document.querySelectorAll('#tabButtons button').forEach(btn => {
+        btn.className = 'px-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent';
+      });
+      document.getElementById('btn-' + tabId).className = 'px-3 py-2 text-xs font-semibold border-b-2 border-cyan-400 text-cyan-400';
+    }
+
+    async function synthesizeCircuit() {
+      const prompt = document.getElementById('promptInput').value.trim() || 'Create a 3-qubit GHZ state';
+      const topology = document.getElementById('topologySelect').value;
+      const statusEl = document.getElementById('engineStatus');
+      const submitBtn = document.getElementById('submitBtn');
+
+      statusEl.textContent = 'SYNTHESIZING...';
+      statusEl.className = 'text-amber-400 font-bold animate-pulse';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/synthesize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, topology })
+        });
+        const data = await res.json();
+
+        // Update Stats
+        document.getElementById('qubitCount').textContent = data.statistics.num_qubits;
+        document.getElementById('circuitDepth').textContent = data.statistics.depth;
+        document.getElementById('totalGates').textContent = data.statistics.total_gates;
+        document.getElementById('pqcStatus').textContent = data.pqc_assessment.status === 'QUANTUM_RESISTANT' ? 'RESISTANT' : 'VULNERABLE';
+        document.getElementById('pqcStatus').className = data.pqc_assessment.status === 'QUANTUM_RESISTANT' ? 'text-xl font-bold text-emerald-400' : 'text-xl font-bold text-red-400';
+
+        // Update Content Panes
+        document.getElementById('diagramContent').textContent = data.ascii_diagram;
+        document.getElementById('qiskitContent').textContent = data.qiskit_code;
+        document.getElementById('qasmContent').textContent = data.openqasm_code;
+        document.getElementById('originContent').textContent = data.origin_qrunes;
+
+        // PQC Details
+        document.getElementById('pqcStandard').textContent = data.pqc_assessment.standard;
+        document.getElementById('pqcAlgo').textContent = data.pqc_assessment.algorithm;
+        document.getElementById('pqcCategory').textContent = 'Level ' + data.pqc_assessment.nist_category;
+        document.getElementById('pqcClassical').textContent = data.pqc_assessment.classical_security_bits + ' bits';
+        document.getElementById('pqcQuantum').textContent = data.pqc_assessment.quantum_security_bits + ' bits';
+        document.getElementById('pqcShor').textContent = data.pqc_assessment.shor_vulnerable ? 'NO (Vulnerable)' : 'YES (Resilient)';
+        document.getElementById('pqcShor').className = data.pqc_assessment.shor_vulnerable ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold';
+
+        // Optimizer log
+        let optHtml = '<div class="font-bold text-cyan-400 mb-1">OPTIMIZATION PASS EVIDENCE:</div>';
+        data.optimization_passes.forEach(p => {
+          optHtml += `<div>• ${p.pass_name}: Gates ${p.gates_before} -> ${p.gates_after} (${p.gate_reduction_pct}% reduction), Cancelled: ${p.cancelled_gates}</div>`;
+        });
+        document.getElementById('optimizerLog').innerHTML = optHtml;
+
+        statusEl.textContent = 'VERIFIED PASS';
+        statusEl.className = 'text-emerald-400 font-bold';
+        document.getElementById('lastVerified').textContent = new Date().toLocaleTimeString();
+
+      } catch (err) {
+        statusEl.textContent = 'ERROR';
+        statusEl.className = 'text-red-400 font-bold';
+        console.error(err);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    function copyCurrentTabContent() {
+      const activePane = document.querySelector('.tab-pane:not(.hidden)');
+      if (activePane) {
+        navigator.clipboard.writeText(activePane.innerText);
+        alert('Copied to clipboard!');
+      }
+    }
+
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      synthesizeCircuit();
+    });
+  </script>
+</body>
+</html>
