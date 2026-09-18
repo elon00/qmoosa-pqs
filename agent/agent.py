@@ -1,6 +1,6 @@
 """
-Autonomous Quantum Agent Orchestrator for QMoosa-PQ.
-Parses natural language prompts (Hindi / English), synthesizes AST circuits,
+Autonomous Quantum Agent Orchestrator for QMoosa-PQS.
+Parses natural language prompts (English), synthesizes AST circuits,
 runs constraint optimization passes, and transpiles to Qiskit & Origin Pilot.
 """
 
@@ -24,7 +24,7 @@ class QuantumAgent:
 
     def parse_qubit_count(self, prompt: str, default: int = 3) -> int:
         """Extracts desired number of qubits from prompt text."""
-        match = re.search(r"(\d+)\s*(?:-| )*(?:qubit|qubits|क्यूबिट)", prompt, re.IGNORECASE)
+        match = re.search(r"(\d+)\s*(?:-| )*(?:qubit|qubits)", prompt, re.IGNORECASE)
         if match:
             val = int(match.group(1))
             return max(1, min(val, 16))
@@ -85,7 +85,7 @@ class QuantumAgent:
         """Constructs an AST based on natural language keywords."""
 
         # 1. Bell / GHZ Entanglement
-        if any(w in p for w in ["ghz", "bell", "entangle", "entanglement", "बेल", "जीएचजेड"]):
+        if any(w in p for w in ["ghz", "bell", "entangle", "entanglement"]):
             n = max(2, num_qubits)
             ast = QuantumAST(n, n, name="ghz_entangled_circuit")
             ast.h(0)
@@ -96,7 +96,7 @@ class QuantumAgent:
             return ast
 
         # 2. Grover Search / Oracle
-        if any(w in p for w in ["grover", "search", "oracle", "ग्रोवर"]):
+        if any(w in p for w in ["grover", "search", "oracle"]):
             n = max(2, num_qubits)
             ast = QuantumAST(n, n, name="grover_search_circuit")
             # Initialization (Superposition)
@@ -126,7 +126,7 @@ class QuantumAgent:
             return ast
 
         # 3. Shor's Algorithm / Modular Exponentiation
-        if any(w in p for w in ["shor", "factor", "mod-exp", "शोर"]):
+        if any(w in p for w in ["shor", "factor", "mod-exp"]):
             n = max(4, num_qubits)
             ast = QuantumAST(n, n, name="shors_algorithm_block")
             # Counting register superposition
@@ -149,11 +149,11 @@ class QuantumAgent:
             return ast
 
         # 4. PQC Lattice Verification Oracle
-        if any(w in p for w in ["pqc", "lattice", "post-quantum", "fips", "post quantum", "क्वांटम प्रूफ"]):
+        if any(w in p for w in ["pqc", "lattice", "post-quantum", "fips", "post quantum"]):
             return PQCBridge.build_pqc_verification_circuit(num_qubits)
 
         # 5. Quantum Fourier Transform (QFT)
-        if any(w in p for w in ["qft", "fourier", "फोरियर"]):
+        if any(w in p for w in ["qft", "fourier"]):
             n = max(2, num_qubits)
             ast = QuantumAST(n, n, name="qft_circuit")
             for i in range(n):
@@ -166,7 +166,7 @@ class QuantumAgent:
             return ast
 
         # 6. Quantum Teleportation
-        if any(w in p for w in ["teleport", "teleportation", "टेलीपोर्ट"]):
+        if any(w in p for w in ["teleport", "teleportation"]):
             ast = QuantumAST(3, 3, name="quantum_teleportation")
             # Message preparation on q0
             ast.rx(1.23, 0)

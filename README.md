@@ -1,5 +1,4 @@
 # ⚛️ QMoosa-PQS: Autonomous Quantum Synthesis & Post-Quantum Cryptography Engine
-*(ऑटोनॉमस क्वांटम सिंथेसिस एवं पोस्ट-क्वांटम क्रिप्टोग्राफी इंजन)*
 
 <div align="center">
 
@@ -16,15 +15,15 @@
 
 ---
 
-## 📖 Introduction (परिचय)
+## 📖 Introduction
 
-**QMoosa-PQS** is a next-generation autonomous quantum circuit synthesis and Post-Quantum Cryptography (PQC) platform. Inspired by the top-down functional synthesis architecture of **Classiq**, QMoosa-PQS replaces error-prone, line-by-line manual gate coding with an **AI Agentic natural language pipeline** (Hindi/English) and an **Abstract Syntax Tree (AST) constraint solver**.
+**QMoosa-PQS** is a next-generation autonomous quantum circuit synthesis and Post-Quantum Cryptography (PQC) platform. Inspired by the top-down functional synthesis architecture of **Classiq**, QMoosa-PQS replaces error-prone, line-by-line manual gate coding with an **AI Agentic natural language pipeline** and an **Abstract Syntax Tree (AST) constraint solver**.
 
 It automatically synthesizes circuits, optimizes gate depth ($H \cdot H = I$, $X \cdot X = I$, rotation merging, linear topology routing), and compiles natively to both the **IBM Qiskit ecosystem (OpenQASM 3.0)** and **China's Origin Pilot / QPanda OS (QRunes)**, integrated with strict **NIST FIPS 203 (ML-KEM)** and **FIPS 204 (ML-DSA)** quantum-resistance verification.
 
 ---
 
-## 🌟 Key Capabilities (मुख्य विशेषताएँ)
+## 🌟 Key Capabilities
 
 ### 1. Top-Down Constraint Synthesis (Classiq Alternative)
 * **Functional Logic Modeling**: Define circuits using high-level semantics (superposition, entanglement oracles, modular arithmetic) rather than placing individual gates by hand.
@@ -50,7 +49,7 @@ It automatically synthesizes circuits, optimizes gate depth ($H \cdot H = I$, $X
 | **ECDSA-secp256k1** | Bitcoin / ETH | 128 bits | 0 bits | 🔴 **BROKEN** | Broken by Shor $\mathcal{O}(n^3)$ |
 
 ### 4. ChatGPT-Style Agentic Web Interface
-* Modern dark-mode web application featuring real-time circuit wire rendering, multi-tab code export, and interactive prompts in **Hindi and English**.
+* Modern dark-mode web application featuring real-time circuit wire rendering, multi-tab code export, and interactive natural language prompts.
 * **Zero Backend Required on Web**: Runs client-side synthesis directly inside your browser on GitHub Pages, or seamlessly communicates with local Python REST servers.
 
 ---
@@ -59,7 +58,7 @@ It automatically synthesizes circuits, optimizes gate depth ($H \cdot H = I$, $X
 
 ```mermaid
 flowchart TD
-    User["User Natural Language Prompt (Hindi / English)"] --> Agent["Autonomous Agent Orchestrator (agent.py)"]
+    User["User Natural Language Prompt (English)"] --> Agent["Autonomous Agent Orchestrator (agent.py)"]
     Agent --> AST["Quantum AST Representation (ast_circuit.py)"]
     AST --> Solver["Constraint Optimizer Passes (constraint_solver.py)"]
     
@@ -82,7 +81,7 @@ flowchart TD
 
 ---
 
-## ⚡ Quickstart (तुरंत शुरू करें)
+## ⚡ Quickstart
 
 ### 1. Clone & Run Automated Verification Tests
 ```bash
