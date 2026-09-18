@@ -491,6 +491,9 @@ class HardwareGatewayDispatcher:
             gw = IBMQRuntimeGateway()
             return gw.submit_and_execute(circuit, shots=shots)
 
+    # Developer alias for dispatch
+    dispatch = execute
+
     @staticmethod
     def run_provider_receipt_verifications(telemetry_dir: Optional[str] = None) -> Dict[str, Any]:
         """Independently verifies authenticated execution receipts from IBM Quantum and Origin Quantum."""
@@ -501,8 +504,8 @@ class HardwareGatewayDispatcher:
         """
         Runs automated verification tests across both IBM Quantum and Origin Quantum gateways.
         Explicitly distinguishes between:
-        1. Live authenticated execution (active when IBMQ_TOKEN or ORIGIN_API_KEY are configured)
-        2. Offline calibrated emulation fallback (active when no API credentials are provided)
+        1. Live authenticated execution (active ONLY when IBMQ_TOKEN or ORIGIN_API_KEY physically execute on cloud)
+        2. Offline calibrated emulation fallback (active when credentials are absent or fail auth)
         3. Independent provider receipt cryptographic verification
         """
         circuit = QuantumAST(num_qubits=3)
@@ -532,13 +535,18 @@ class HardwareGatewayDispatcher:
 
         all_ok = ibm_ok and origin_ok
         tokens_present = bool(ibm_gw.api_token or origin_gw.api_key)
+        actual_cloud_executed = (
+            ibm_res.execution_mode == "PHYSICAL_CLOUD_EXECUTED"
+            or origin_res.execution_mode == "PHYSICAL_CLOUD_EXECUTED"
+        )
 
         receipts_eval = ProviderReceiptValidator.verify_all_provider_receipts()
 
         return {
             "status": "HARDWARE_GATEWAY_VERIFIED" if all_ok else "FAILED",
             "live_tokens_configured": tokens_present,
-            "execution_mode_reported": "PHYSICAL_CLOUD_EXECUTED" if tokens_present else "OFFLINE_CALIBRATED_EMULATION",
+            "actual_cloud_executed": actual_cloud_executed,
+            "execution_mode_reported": "PHYSICAL_CLOUD_EXECUTED" if actual_cloud_executed else "OFFLINE_CALIBRATED_EMULATION",
             "fallback_honesty_verified": True,
             "provider_receipts_status": receipts_eval["status"],
             "ibm_quantum_gateway": ibm_res.to_dict(),
