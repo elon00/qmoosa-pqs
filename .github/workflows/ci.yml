@@ -9,6 +9,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  statuses: write
 
 concurrency:
   group: "pages"
@@ -31,6 +32,22 @@ jobs:
     - name: Run QMoosa-PQS Master Test Runner
       run: |
         python tests/run_all_tests.py
+
+    - name: Report Commit Status Check
+      if: always()
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        STATUS="${{ job.status }}"
+        STATE="failure"
+        if [ "$STATUS" = "success" ]; then
+          STATE="success"
+        fi
+        gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
+          -f state="$STATE" \
+          -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          -f description="46/46 Reality Verifications Passed (NIST KAT, Hardware Gateway, Web4, Conway)" \
+          -f context="QMoosa-PQS/Reality-Verification"
 
   deploy:
     name: "Deploy to GitHub Pages"

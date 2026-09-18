@@ -40,8 +40,9 @@ class QMoosaHTTPRequestHandler(SimpleHTTPRequestHandler):
                 data = json.loads(post_body.decode("utf-8")) if post_body else {}
                 prompt = data.get("prompt", "Create a 3-qubit GHZ state")
                 topology = data.get("topology", "all_to_all")
+                backend = data.get("backend", "ibm_quantum")
 
-                agent = QuantumAgent(target_topology=topology)
+                agent = QuantumAgent(target_topology=topology, target_backend=backend)
                 result = agent.synthesize(prompt)
 
                 response_bytes = json.dumps(result).encode("utf-8")

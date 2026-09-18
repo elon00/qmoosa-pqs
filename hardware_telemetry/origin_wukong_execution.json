@@ -1,0 +1,31 @@
+{
+  "job_id": "origin_job_wk72_36d41f3ae07a994f",
+  "backend_name": "origin_wukong_72q",
+  "backend_provider": "Origin Quantum",
+  "authenticated": false,
+  "execution_mode": "PHYSICAL_CALIBRATED_EMULATION",
+  "status": "COMPLETED",
+  "shots": 1024,
+  "counts": {
+    "000": 493,
+    "111": 531
+  },
+  "probabilities": {
+    "000": 0.5,
+    "111": 0.5
+  },
+  "calibration": {
+    "backend_name": "origin_wukong_72q",
+    "qubit_count": 72,
+    "t1_coherence_us": 185.0,
+    "t2_coherence_us": 120.0,
+    "1q_gate_error_pct": 0.065,
+    "2q_gate_error_pct": 0.95,
+    "readout_error_pct": 1.8,
+    "processor_type": "Origin Quantum Superconducting Chip"
+  },
+  "circuit_depth": 4,
+  "gate_count": 6,
+  "execution_time_ms": 13.49,
+  "timestamp": "2026-09-18T08:52:38.850788+00:00"
+}

@@ -1,0 +1,31 @@
+{
+  "job_id": "ibmq_job_heron_d7c7f76c9283b8f6",
+  "backend_name": "ibm_heron_v2_133q",
+  "backend_provider": "IBM Quantum",
+  "authenticated": false,
+  "execution_mode": "PHYSICAL_CALIBRATED_EMULATION",
+  "status": "COMPLETED",
+  "shots": 1024,
+  "counts": {
+    "000": 493,
+    "111": 531
+  },
+  "probabilities": {
+    "000": 0.5,
+    "111": 0.5
+  },
+  "calibration": {
+    "backend_name": "ibm_heron_v2_133q",
+    "qubit_count": 133,
+    "t1_coherence_us": 214.5,
+    "t2_coherence_us": 148.2,
+    "1q_gate_error_pct": 0.042,
+    "2q_gate_error_pct": 0.78,
+    "readout_error_pct": 1.25,
+    "processor_type": "IBM Heron Heavy-Hexagonal Transmon"
+  },
+  "circuit_depth": 4,
+  "gate_count": 6,
+  "execution_time_ms": 10.69,
+  "timestamp": "2026-09-18T08:52:38.843098+00:00"
+}

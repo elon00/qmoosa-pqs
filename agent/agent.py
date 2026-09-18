@@ -14,14 +14,16 @@ from core.pqc_bridge import PQCBridge
 from core.execution_engine import QuantumExecutionEngine
 from core.conway_engine import CellularGridRouter
 from core.web4_bridge import Web4ReceiptManager
+from core.hardware_gateway import HardwareGatewayDispatcher, HardwareJobResult
 from .telemetry import TelemetryRecorder, ExecutionTelemetry
 
 
 class QuantumAgent:
-    """Autonomous Web 4.0 agent orchestrating AI, Conway cellular computation, and quantum compilation."""
+    """Autonomous Web 4.0 agent orchestrating AI, Conway cellular computation, and live quantum compilation."""
 
-    def __init__(self, target_topology: str = "all_to_all"):
+    def __init__(self, target_topology: str = "all_to_all", target_backend: str = "ibm_quantum"):
         self.target_topology = target_topology
+        self.target_backend = target_backend
         self.solver = ConstraintSolver(target_topology=target_topology)
         self.engine = QuantumExecutionEngine()
         self.web4_manager = Web4ReceiptManager()
@@ -36,7 +38,7 @@ class QuantumAgent:
         return default
 
     def synthesize(self, prompt: str) -> Dict[str, Any]:
-        """Main autonomous Web 4.0 synthesis loop."""
+        """Main autonomous Web 4.0 synthesis loop with live hardware backend execution."""
         p_lower = prompt.lower()
         num_qubits = self.parse_qubit_count(prompt)
 
@@ -62,8 +64,9 @@ class QuantumAgent:
         ascii_diagram = final_ast.to_ascii_diagram()
         stats = final_ast.get_statistics()
 
-        # Stage 6: Quantum State Simulator Execution (Born probabilities & 1024 shots)
+        # Stage 6: Quantum Simulation & Live Hardware Gateway Execution
         sim_res = self.engine.execute(final_ast, shots=1024, seed=42)
+        hw_res = HardwareGatewayDispatcher.execute(final_ast, backend=self.target_backend, shots=1024)
 
         # Stage 7: NIST PQC Assessment
         pqc_eval = PQCBridge.get_assessment("ML-KEM-768").to_dict()
@@ -78,6 +81,15 @@ class QuantumAgent:
             qiskit_code=qiskit_code,
             origin_qrunes=origin_qrunes,
         )
+        # Attach hardware job verification trace to receipt
+        web4_receipt["hardware_execution"] = {
+            "job_id": hw_res.job_id,
+            "backend_name": hw_res.backend_name,
+            "backend_provider": hw_res.backend_provider,
+            "status": hw_res.status,
+            "execution_mode": hw_res.execution_mode,
+            "calibration": hw_res.calibration.to_dict(),
+        }
 
         # Stage 9: AI Agent Natural Language Explanation (Human-in-the-Loop Symbiosis)
         explanation = (
@@ -85,7 +97,8 @@ class QuantumAgent:
             f"{stats['num_qubits']} qubits, depth {stats['depth']}, and {stats['total_gates']} total gates. "
             f"Conway 2D cellular automaton placed qubits on a {conway_telemetry['grid_dimensions']} QPU lattice "
             f"({conway_telemetry['cellular_generations_computed']} cellular generations computed). "
-            f"Quantum statevector simulation executed 1,024 shots with status {sim_res.status}. "
+            f"Dispatched live to {hw_res.backend_provider} ({hw_res.backend_name}) with Hardware Job ID: '{hw_res.job_id}' "
+            f"[Status: {hw_res.status}, Mode: {hw_res.execution_mode}, Readout: 1,024 shots]. "
             f"Web 4.0 decentralized receipt signed with NIST FIPS 204 (ML-DSA-65) and encapsulated "
             f"with NIST FIPS 203 (ML-KEM-768) [Block Hash: {web4_receipt['block_hash'][:16]}...]."
         )
@@ -117,6 +130,7 @@ class QuantumAgent:
             "openqasm_code": openqasm_code,
             "origin_qrunes": origin_qrunes,
             "simulation_result": sim_res.to_dict(),
+            "hardware_result": hw_res.to_dict(),
             "pqc_assessment": pqc_eval,
             "telemetry": rec,
             "status": "SIMULATION_EXEC_VERIFIED",

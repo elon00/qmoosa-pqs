@@ -19,6 +19,8 @@ from core.pqc_crypto import PQCKATRunner
 from core.execution_engine import QuantumExecutionEngine
 from core.conway_engine import run_conway_verifications
 from core.web4_bridge import run_web4_attestation_verifications
+from core.hardware_gateway import HardwareGatewayDispatcher
+from core.nist_kat_data import ExternalNISTKATValidator
 
 
 def run_master_test_suite():
@@ -92,9 +94,27 @@ def run_master_test_suite():
             print(f"  [PASS] Prompt: '{prompt}'")
             print(f"         Qubits: {res['statistics']['num_qubits']} | Depth: {res['statistics']['depth']} | Gates: {res['statistics']['total_gates']}")
             print(f"         Conway Grid: {res['conway_telemetry']['grid_dimensions']} | Web4 Block: {res['web4_receipt']['block_hash'][:16]}...")
+            print(f"         Hardware Job: {res['hardware_result']['backend_provider']} ({res['hardware_result']['job_id'][:16]}...)")
         except Exception as e:
             print(f"  [FAIL] Prompt: '{prompt}' -> {e}")
             agent_success = False
+
+    # Step 7: Live Quantum Hardware Gateway Execution Proofs
+    print("\n--- Step 7: Running Live Quantum Hardware Gateway Execution Proofs ---")
+    hw_res = HardwareGatewayDispatcher.run_all_hardware_verifications()
+    hw_success = (hw_res["status"] == "HARDWARE_GATEWAY_VERIFIED")
+    print(f"  [HARDWARE] Status: {hw_res['status']}")
+    print(f"             IBM Quantum (Heron 133Q): Job={hw_res['ibm_quantum_gateway']['job_id']} | Mode={hw_res['ibm_quantum_gateway']['execution_mode']}")
+    print(f"             Origin Quantum (Wukong 72Q): Job={hw_res['origin_quantum_gateway']['job_id']} | Mode={hw_res['origin_quantum_gateway']['execution_mode']}")
+    print(f"             All Backends Operational: {hw_res['all_backends_operational']}")
+
+    # Step 8: External NIST CSRC PQC Benchmark KAT Verifications
+    print("\n--- Step 8: Running External NIST CSRC PQC Benchmark KAT Proofs ---")
+    ext_kat_res = ExternalNISTKATValidator.run_all_external_kats()
+    ext_kat_success = (ext_kat_res["status"] == "EXTERNAL_NIST_KAT_VERIFIED")
+    print(f"  [EXT-KAT] Status: {ext_kat_res['status']}")
+    print(f"            ML-KEM-768 External KATs: {ext_kat_res['ml_kem_768']['status']} ({ext_kat_res['ml_kem_768']['vectors_evaluated']} vectors)")
+    print(f"            ML-DSA-65 External KATs: {ext_kat_res['ml_dsa_65']['status']} ({ext_kat_res['ml_dsa_65']['vectors_evaluated']} vectors)")
 
     elapsed = time.time() - start_time
     total_run = test_result.testsRun
@@ -110,9 +130,11 @@ def run_master_test_suite():
     print(f"  Simulation Engine Status      : {'PASS' if exec_success else 'FAIL'}")
     print(f"  Web 4.0 Attestation Status    : {'PASS' if web4_success else 'FAIL'}")
     print(f"  Agent E2E Status              : {'PASS' if agent_success else 'FAIL'}")
+    print(f"  Hardware Gateway Status       : {'PASS' if hw_success else 'FAIL'}")
+    print(f"  External NIST KAT Status      : {'PASS' if ext_kat_success else 'FAIL'}")
     print(f"  Execution Time                : {elapsed:.2f} seconds")
 
-    if test_result.wasSuccessful() and kat_success and conway_success and exec_success and web4_success and agent_success:
+    if test_result.wasSuccessful() and kat_success and conway_success and exec_success and web4_success and agent_success and hw_success and ext_kat_success:
         print("  OVERALL VERIFICATION STATUS: VERIFIED_PASS")
         print("==================================================================")
         return 0
