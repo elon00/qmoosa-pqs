@@ -19,14 +19,15 @@ class TestPQCBridge(unittest.TestCase):
         assessment = PQCBridge.get_assessment("ML-KEM-768")
         self.assertEqual(assessment.standard, "NIST FIPS 203")
         self.assertFalse(assessment.shor_vulnerable)
-        self.assertGreaterEqual(assessment.quantum_security_bits, 180)
+        self.assertEqual(assessment.nist_category, 3)
+        self.assertEqual(assessment.nist_equivalent, "AES-192 key search")
         self.assertEqual(assessment.public_key_bytes, 1184)
         self.assertEqual(assessment.ciphertext_or_sig_bytes, 1088)
 
     def test_legacy_crypto_assessment(self):
         assessment = PQCBridge.get_assessment("ECDSA-secp256k1")
         self.assertTrue(assessment.shor_vulnerable)
-        self.assertEqual(assessment.quantum_security_bits, 0)
+        self.assertEqual(assessment.nist_category, 0)
 
     def test_pqc_lattice_circuit_generation(self):
         circuit = PQCBridge.build_pqc_verification_circuit(num_qubits=4)

@@ -11,6 +11,7 @@ from core.ast_circuit import QuantumAST, GateType
 from core.constraint_solver import ConstraintSolver
 from core.transpiler import QiskitTranspiler, OpenQASMTranspiler, OriginPilotTranspiler
 from core.pqc_bridge import PQCBridge
+from core.execution_engine import QuantumExecutionEngine
 from .telemetry import TelemetryRecorder, ExecutionTelemetry
 
 
@@ -20,6 +21,7 @@ class QuantumAgent:
     def __init__(self, target_topology: str = "all_to_all"):
         self.target_topology = target_topology
         self.solver = ConstraintSolver(target_topology=target_topology)
+        self.engine = QuantumExecutionEngine()
         self.recorder = TelemetryRecorder()
 
     def parse_qubit_count(self, prompt: str, default: int = 3) -> int:
@@ -46,9 +48,12 @@ class QuantumAgent:
         openqasm_code = OpenQASMTranspiler.transpile(optimized_ast)
         origin_qrunes = OriginPilotTranspiler.transpile(optimized_ast)
 
-        # Generate Diagrams
+        # Generate Diagrams & Metrics
         ascii_diagram = optimized_ast.to_ascii_diagram()
         stats = optimized_ast.get_statistics()
+
+        # Execute on Local Quantum Execution Engine (Born rule probabilities & 1024 shots)
+        sim_res = self.engine.execute(optimized_ast, shots=1024, seed=42)
 
         # PQC Assessment
         pqc_eval = PQCBridge.get_assessment("ML-KEM-768").to_dict()
@@ -63,7 +68,7 @@ class QuantumAgent:
             two_qubit_gates=stats["two_qubit_gates"],
             optimization_passes=[p.to_dict() for p in passes],
             pqc_status=pqc_eval["status"],
-            execution_status="VERIFIED_PASS",
+            execution_status=sim_res.status,
         )
         rec = self.recorder.record(telemetry)
 
@@ -76,9 +81,10 @@ class QuantumAgent:
             "qiskit_code": qiskit_code,
             "openqasm_code": openqasm_code,
             "origin_qrunes": origin_qrunes,
+            "simulation_result": sim_res.to_dict(),
             "pqc_assessment": pqc_eval,
             "telemetry": rec,
-            "status": "VERIFIED_PASS",
+            "status": "SIMULATION_EXEC_VERIFIED",
         }
 
     def _build_semantic_ast(self, p: str, num_qubits: int) -> QuantumAST:

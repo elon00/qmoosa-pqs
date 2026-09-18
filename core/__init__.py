@@ -7,6 +7,8 @@ from .ast_circuit import QuantumAST, GateNode, QuantumRegisterNode, ClassicalReg
 from .constraint_solver import ConstraintSolver, OptimizationPass
 from .transpiler import QiskitTranspiler, OriginPilotTranspiler, OpenQASMTranspiler
 from .pqc_bridge import PQCBridge, PQCSecurityAssessment
+from .pqc_crypto import ML_KEM_768, ML_DSA_65, PQCKATRunner
+from .execution_engine import QuantumExecutionEngine, SimulationResult
 
 __all__ = [
     "QuantumAST",
@@ -20,4 +22,9 @@ __all__ = [
     "OpenQASMTranspiler",
     "PQCBridge",
     "PQCSecurityAssessment",
+    "ML_KEM_768",
+    "ML_DSA_65",
+    "PQCKATRunner",
+    "QuantumExecutionEngine",
+    "SimulationResult",
 ]
