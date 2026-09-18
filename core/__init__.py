@@ -11,6 +11,7 @@ from .pqc_crypto import ML_KEM_768, ML_DSA_65, PQCKATRunner
 from .execution_engine import QuantumExecutionEngine, SimulationResult
 from .conway_engine import ConwayAutomaton, CellularGridRouter, ConwayEntropyGenerator
 from .web4_bridge import Web4ReceiptManager
+from .qpu_adapter import OriginCloudLifecycleAdapter, IBMQCloudLifecycleAdapter
 
 __all__ = [
     "QuantumAST",
@@ -33,4 +34,6 @@ __all__ = [
     "CellularGridRouter",
     "ConwayEntropyGenerator",
     "Web4ReceiptManager",
+    "OriginCloudLifecycleAdapter",
+    "IBMQCloudLifecycleAdapter",
 ]

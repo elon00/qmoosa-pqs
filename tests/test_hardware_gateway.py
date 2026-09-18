@@ -19,6 +19,8 @@ from core.hardware_gateway import (
     ProviderReceiptValidator,
     IBM_HERON_CALIBRATION,
     ORIGIN_WUKONG_CALIBRATION,
+    OriginCloudLifecycleAdapter,
+    IBMQCloudLifecycleAdapter,
 )
 
 
@@ -149,6 +151,34 @@ class TestHardwareGateway(unittest.TestCase):
         self.assertEqual(summary["provider_receipts_status"], "PROVIDER_RECEIPTS_VERIFIED")
         self.assertTrue(summary["all_backends_operational"])
 
+    def test_origin_lifecycle_adapter_fail_closed(self):
+        """Validates fail-closed behavior of OriginCloudLifecycleAdapter."""
+        adapter = OriginCloudLifecycleAdapter(api_key="")
+        probe = adapter.probe()
+        self.assertIn("reachable", probe)
+        self.assertIn("authenticated", probe)
+        self.assertFalse(probe["authenticated"])
+        with self.assertRaises(ValueError):
+            adapter.submit("QINIT 1\nCREG 1\nH q[0]\nMEASURE q[0], c[0]")
+
+    def test_ibmq_lifecycle_adapter_fail_closed(self):
+        """Validates fail-closed behavior of IBMQCloudLifecycleAdapter."""
+        adapter = IBMQCloudLifecycleAdapter(api_token="")
+        probe = adapter.probe()
+        self.assertIn("reachable", probe)
+        self.assertIn("authenticated", probe)
+        self.assertFalse(probe["authenticated"])
+        with self.assertRaises(ValueError):
+            adapter.submit('OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[1];\ncreg c[1];\nh q[0];\nmeasure q[0] -> c[0];')
+
+    def test_independent_recheck_unauthenticated_rejection(self):
+        """Validates that out-of-band independent re-query rejects unauthenticated / nonexistent tasks."""
+        adapter = OriginCloudLifecycleAdapter(api_key="invalid_test_token")
+        recheck = adapter.independent_re_query("origin_job_nonexistent_123")
+        self.assertFalse(recheck["verified"])
+        self.assertIsNotNone(recheck["error"])
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -49,10 +49,12 @@ try:
     from core.ast_circuit import QuantumAST, GateType
     from core.transpiler import OpenQASMTranspiler, OriginPilotTranspiler
     from core.execution_engine import QuantumExecutionEngine
+    from core.qpu_adapter import OriginCloudLifecycleAdapter, IBMQCloudLifecycleAdapter
 except ImportError:
     from .ast_circuit import QuantumAST, GateType
     from .transpiler import OpenQASMTranspiler, OriginPilotTranspiler
     from .execution_engine import QuantumExecutionEngine
+    from .qpu_adapter import OriginCloudLifecycleAdapter, IBMQCloudLifecycleAdapter
 
 
 class QPUCalibrationMetrics:
