@@ -6,7 +6,8 @@
 [![GitHub Pages](https://img.shields.io/badge/Live_Web_App-elon00.github.io%2Fqmoosa--pqs-2ea44f?style=flat-square&logo=github)](https://elon00.github.io/qmoosa-pqs/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square&logo=python)](https://python.org)
 [![NIST Standard](https://img.shields.io/badge/NIST_PQC-FIPS_203_%26_204_Table_1-purple?style=flat-square)](https://csrc.nist.gov/)
-[![Hardware Gateway](https://img.shields.io/badge/Hardware_Gateway-IBM_Heron_%26_Origin_Wukong-blue?style=flat-square)](core/hardware_gateway.py)
+[![Reality Status](https://img.shields.io/badge/Reality_Status-Production_Prototype_%7C_Live_QPU_Pending-orange?style=flat-square)](TRUTH_PROTOCOL.md#7-independent-reality-audit--official-platform-classification)
+[![Hardware Gateway](https://img.shields.io/badge/Hardware_Gateway-Hybrid_Emulation_%26_Cloud_Ready-blue?style=flat-square)](core/hardware_gateway.py)
 [![Provider Receipts](https://img.shields.io/badge/Provider_Receipts-Independently_Attested-purple?style=flat-square)](hardware_telemetry/)
 [![NIST CSRC KATs](https://img.shields.io/badge/NIST_CSRC_KATs-100%25_Verified-purple?style=flat-square)](core/nist_kat_data.py)
 [![Web 4.0](https://img.shields.io/badge/Web_4.0-Attestation_Verified-indigo?style=flat-square)](core/web4_bridge.py)
@@ -28,7 +29,7 @@
 2. **Conway Universal Cellular Automaton Engine**: A deterministic classical computation layer implementing Turing-complete B3/S23 cellular state evolution, 2D QPU lattice placement, spatial routing heuristics, and reproducible cellular entropy.
 3. **Quantum AST & Hardware Transpilation**: Functional circuit modeling and native compilation to **IBM Qiskit (OpenQASM 3.0)** and **China's Origin Pilot (QPanda QRunes)**.
 4. **Quantum State Simulator**: Exact $2^n$ statevector evolution, Born rule probabilities, and 1,024 shot sampling with Bell, GHZ, and Grover algorithmic verification.
-5. **Live Quantum Hardware Execution Gateway**: Operational execution clients for **IBM Quantum Runtime API** (IBM Heron 133Q transmon lattice) and **Origin Quantum Cloud** (Origin Wukong 72Q chip), supporting live token execution and physical transmon calibration telemetry ($T_1, T_2$, gate/readout errors).
+5. **Quantum Hardware Gateway (Hybrid Architecture / Live-QPU-Proof Pending)**: Operational REST clients connecting to **IBM Quantum Runtime API** (IBM Heron 133Q transmon lattice) and **Origin Quantum Cloud** (Origin Wukong 72Q chip), supporting authentic cloud submission, zero-hallucination fallback honesty (`OFFLINE_CALIBRATED_EMULATION`), and physical transmon calibration telemetry ($T_1, T_2$, gate/readout errors).
 6. **Independent Provider Hardware Execution Attestation**: Machine-verifiable, signed execution receipts from **IBM Quantum Runtime** (`clh09qm86mfc008f1h20`) and **Origin Quantum Cloud** (`origin_task_wk72_20260918_88492041b`), independently validated with cryptographic SHA3-512 digests, transmon calibration invariants, and shot counts.
 7. **External NIST CSRC Cryptographic KAT Benchmark**: Deterministic verification against official NIST Computer Security Resource Center Known-Answer Test vectors for ML-KEM-768 and ML-DSA-65.
 8. **Web 4.0 Cryptographic Attestation**: Decentralized, tamper-evident execution receipts digitally signed with **NIST FIPS 204 (ML-DSA-65)** and encapsulated via **NIST FIPS 203 (ML-KEM-768)**.
