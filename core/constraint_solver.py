@@ -74,6 +74,9 @@ class ConstraintSolver:
         if self.target_topology == "linear":
             current, p3 = self.enforce_linear_topology(current)
             history.append(p3)
+        elif self.target_topology in ("conway_2d", "cellular_grid", "2d_grid"):
+            current, p3 = self.enforce_conway_2d_topology(current)
+            history.append(p3)
 
         return current, history
 
@@ -219,3 +222,25 @@ class ConstraintSolver:
             cancelled_gates=-swaps_added,
         )
         return result_ast, pass_telemetry
+
+    def enforce_conway_2d_topology(self, ast: QuantumAST) -> Tuple[QuantumAST, OptimizationPass]:
+        """Routes 2-qubit interactions on a 2D QPU lattice using Conway cellular routing."""
+        from .conway_engine import CellularGridRouter
+        d_before = ast.calculate_depth()
+        g_before = len(ast.gates)
+
+        router = CellularGridRouter(grid_rows=4, grid_cols=4)
+        routed_ast, telemetry = router.route_circuit_on_grid(ast)
+
+        d_after = routed_ast.calculate_depth()
+        g_after = len(routed_ast.gates)
+
+        p = OptimizationPass(
+            name=f"Conway2DCellularRoutingPass({telemetry['grid_dimensions']})",
+            gates_before=g_before,
+            gates_after=g_after,
+            depth_before=d_before,
+            depth_after=d_after,
+            cancelled_gates=-telemetry.get("swaps_inserted", 0),
+        )
+        return routed_ast, p

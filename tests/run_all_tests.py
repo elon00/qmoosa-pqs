@@ -1,7 +1,8 @@
 """
-Master Test Runner for QMoosa-PQ.
-Executes all unit test suites, NIST PQC KATs, Quantum Execution Engine verifications,
-and Autonomous Agent End-to-End syntheses under the Zero-Hallucination Truth Protocol.
+Master Reality Verification Runner for QMoosa-PQS.
+Executes all unit test suites, NIST FIPS 203/204 KATs, Conway Cellular Routing verifications,
+Quantum Execution Engine simulation proofs, Web 4.0 Attestation receipts, and Autonomous Agent
+End-to-End syntheses under the Zero-Hallucination 5-Tier Truth Protocol.
 """
 
 import unittest
@@ -16,11 +17,14 @@ if PROJECT_ROOT not in sys.path:
 from agent.agent import QuantumAgent
 from core.pqc_crypto import PQCKATRunner
 from core.execution_engine import QuantumExecutionEngine
+from core.conway_engine import run_conway_verifications
+from core.web4_bridge import run_web4_attestation_verifications
 
 
 def run_master_test_suite():
     print("==================================================================")
-    print("  QMoosa-PQ Master Test Runner & Reality Verification")
+    print("  QMoosa-PQS Master Reality Verification & Test Suite")
+    print("  Web 4.0 Autonomous Quantum & Cellular Compilation Platform")
     print("  Zero-Hallucination Machine Evidence Protocol")
     print("==================================================================")
 
@@ -46,16 +50,33 @@ def run_master_test_suite():
     print(f"        ML-DSA-65 Message Tamper Rejected: {kat_result['ml_dsa_65']['tampered_message_rejected']}")
     print(f"        ML-DSA-65 Sig Tamper Rejected: {kat_result['ml_dsa_65']['tampered_signature_rejected']}")
 
-    # Step 3: Quantum Execution Engine Algorithmic Verifications
-    print("\n--- Step 3: Running Quantum Execution Engine Simulation Proofs ---")
+    # Step 3: Conway Universal Cellular Automaton & 2D Grid Routing Verifications
+    print("\n--- Step 3: Running Conway Cellular Automaton & 2D Grid Routing Proofs ---")
+    conway_res = run_conway_verifications()
+    conway_success = (conway_res["status"] == "CELLULAR_CONWAY_VERIFIED")
+    print(f"  [CONWAY] Status: {conway_res['status']}")
+    print(f"           Blinker Period-2 Oscillator: {conway_res['blinker_oscillator_period_verified']}")
+    print(f"           Glider Population Preservation: {conway_res['glider_propagation_verified']}")
+    print(f"           2D QPU Lattice Grid Router: {conway_res['grid_router_verified']}")
+
+    # Step 4: Quantum Execution Engine Algorithmic Verifications
+    print("\n--- Step 4: Running Quantum Execution Engine Simulation Proofs ---")
     engine = QuantumExecutionEngine()
     exec_result = engine.run_all_verifications()
     exec_success = (exec_result["status"] == "SIMULATION_EXEC_VERIFIED")
     for name, proof in exec_result["verifications"].items():
         print(f"  [EXEC] {name.upper()}: Passed={proof['passed']} | Status={proof['status']}")
 
-    # Step 4: End-to-end Agent synthesis test
-    print("\n--- Step 4: Running End-to-End Autonomous Agent Test ---")
+    # Step 5: Web 4.0 Cryptographic Attestation Receipts
+    print("\n--- Step 5: Running Web 4.0 Cryptographic Attestation Verifications ---")
+    web4_res = run_web4_attestation_verifications()
+    web4_success = (web4_res["status"] == "WEB4_ATTESTATION_VERIFIED")
+    print(f"  [WEB4] Status: {web4_res['status']}")
+    print(f"         ML-DSA-65 Signed Receipt Valid: {web4_res['signature_valid']}")
+    print(f"         Receipt Tamper Rejected: {web4_res['tamper_rejected']}")
+
+    # Step 6: End-to-end Agent synthesis test
+    print("\n--- Step 6: Running End-to-End Autonomous Agent Test ---")
     agent = QuantumAgent()
     sample_prompts = [
         "Create a 3-qubit GHZ state with minimal depth",
@@ -70,6 +91,7 @@ def run_master_test_suite():
             res = agent.synthesize(prompt)
             print(f"  [PASS] Prompt: '{prompt}'")
             print(f"         Qubits: {res['statistics']['num_qubits']} | Depth: {res['statistics']['depth']} | Gates: {res['statistics']['total_gates']}")
+            print(f"         Conway Grid: {res['conway_telemetry']['grid_dimensions']} | Web4 Block: {res['web4_receipt']['block_hash'][:16]}...")
         except Exception as e:
             print(f"  [FAIL] Prompt: '{prompt}' -> {e}")
             agent_success = False
@@ -80,15 +102,17 @@ def run_master_test_suite():
     errors = len(test_result.errors)
 
     print("\n==================================================================")
-    print(f"  Total Unit Tests Executed : {total_run}")
-    print(f"  Unit Test Failures        : {failures}")
-    print(f"  Unit Test Errors          : {errors}")
-    print(f"  NIST PQC KAT Status       : {'PASS' if kat_success else 'FAIL'}")
-    print(f"  Simulation Engine Status  : {'PASS' if exec_success else 'FAIL'}")
-    print(f"  Agent E2E Status          : {'PASS' if agent_success else 'FAIL'}")
-    print(f"  Execution Time            : {elapsed:.2f} seconds")
+    print(f"  Total Unit Tests Executed     : {total_run}")
+    print(f"  Unit Test Failures            : {failures}")
+    print(f"  Unit Test Errors              : {errors}")
+    print(f"  NIST PQC KAT Status           : {'PASS' if kat_success else 'FAIL'}")
+    print(f"  Conway Cellular Engine Status : {'PASS' if conway_success else 'FAIL'}")
+    print(f"  Simulation Engine Status      : {'PASS' if exec_success else 'FAIL'}")
+    print(f"  Web 4.0 Attestation Status    : {'PASS' if web4_success else 'FAIL'}")
+    print(f"  Agent E2E Status              : {'PASS' if agent_success else 'FAIL'}")
+    print(f"  Execution Time                : {elapsed:.2f} seconds")
 
-    if test_result.wasSuccessful() and kat_success and exec_success and agent_success:
+    if test_result.wasSuccessful() and kat_success and conway_success and exec_success and web4_success and agent_success:
         print("  OVERALL VERIFICATION STATUS: VERIFIED_PASS")
         print("==================================================================")
         return 0

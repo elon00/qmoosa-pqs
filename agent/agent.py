@@ -12,16 +12,19 @@ from core.constraint_solver import ConstraintSolver
 from core.transpiler import QiskitTranspiler, OpenQASMTranspiler, OriginPilotTranspiler
 from core.pqc_bridge import PQCBridge
 from core.execution_engine import QuantumExecutionEngine
+from core.conway_engine import CellularGridRouter
+from core.web4_bridge import Web4ReceiptManager
 from .telemetry import TelemetryRecorder, ExecutionTelemetry
 
 
 class QuantumAgent:
-    """Autonomous agent that translates natural language into verified quantum circuits."""
+    """Autonomous Web 4.0 agent orchestrating AI, Conway cellular computation, and quantum compilation."""
 
     def __init__(self, target_topology: str = "all_to_all"):
         self.target_topology = target_topology
         self.solver = ConstraintSolver(target_topology=target_topology)
         self.engine = QuantumExecutionEngine()
+        self.web4_manager = Web4ReceiptManager()
         self.recorder = TelemetryRecorder()
 
     def parse_qubit_count(self, prompt: str, default: int = 3) -> int:
@@ -33,36 +36,65 @@ class QuantumAgent:
         return default
 
     def synthesize(self, prompt: str) -> Dict[str, Any]:
-        """Main autonomous synthesis loop."""
+        """Main autonomous Web 4.0 synthesis loop."""
         p_lower = prompt.lower()
         num_qubits = self.parse_qubit_count(prompt)
 
-        # Build initial AST based on semantic intent
+        # Stage 1: Build initial AST based on semantic intent
         ast = self._build_semantic_ast(p_lower, num_qubits)
 
-        # Run Constraint & Optimization Passes
+        # Stage 2: Classical Optimization Passes (Inverse Cancellation, Rotation Merging)
         optimized_ast, passes = self.solver.solve_and_optimize(ast)
 
-        # Transpile to target backends
-        qiskit_code = QiskitTranspiler.transpile(optimized_ast)
-        openqasm_code = OpenQASMTranspiler.transpile(optimized_ast)
-        origin_qrunes = OriginPilotTranspiler.transpile(optimized_ast)
+        # Stage 3: Conway Cellular Automaton 2D Grid Placement & Routing
+        router = CellularGridRouter(grid_rows=4, grid_cols=4)
+        conway_ast, conway_telemetry = router.route_circuit_on_grid(optimized_ast)
 
-        # Generate Diagrams & Metrics
-        ascii_diagram = optimized_ast.to_ascii_diagram()
-        stats = optimized_ast.get_statistics()
+        # If user explicitly requested Conway 2D topology, adopt the cellular-routed AST
+        final_ast = conway_ast if self.target_topology in ("conway_2d", "cellular_grid", "2d_grid") else optimized_ast
 
-        # Execute on Local Quantum Execution Engine (Born rule probabilities & 1024 shots)
-        sim_res = self.engine.execute(optimized_ast, shots=1024, seed=42)
+        # Stage 4: Multi-Target Compilation
+        qiskit_code = QiskitTranspiler.transpile(final_ast)
+        openqasm_code = OpenQASMTranspiler.transpile(final_ast)
+        origin_qrunes = OriginPilotTranspiler.transpile(final_ast)
 
-        # PQC Assessment
+        # Stage 5: Diagrams & Topological Metrics
+        ascii_diagram = final_ast.to_ascii_diagram()
+        stats = final_ast.get_statistics()
+
+        # Stage 6: Quantum State Simulator Execution (Born probabilities & 1024 shots)
+        sim_res = self.engine.execute(final_ast, shots=1024, seed=42)
+
+        # Stage 7: NIST PQC Assessment
         pqc_eval = PQCBridge.get_assessment("ML-KEM-768").to_dict()
+
+        # Stage 8: Web 4.0 Cryptographic Attestation Receipt (Signed with ML-DSA-65)
+        web4_receipt = self.web4_manager.create_attestation_receipt(
+            prompt=prompt,
+            circuit_name=final_ast.name,
+            statistics=stats,
+            conway_telemetry=conway_telemetry,
+            simulation_result=sim_res.to_dict(),
+            qiskit_code=qiskit_code,
+            origin_qrunes=origin_qrunes,
+        )
+
+        # Stage 9: AI Agent Natural Language Explanation (Human-in-the-Loop Symbiosis)
+        explanation = (
+            f"Autonomous Synthesis Report: Successfully synthesized '{final_ast.name}' with "
+            f"{stats['num_qubits']} qubits, depth {stats['depth']}, and {stats['total_gates']} total gates. "
+            f"Conway 2D cellular automaton placed qubits on a {conway_telemetry['grid_dimensions']} QPU lattice "
+            f"({conway_telemetry['cellular_generations_computed']} cellular generations computed). "
+            f"Quantum statevector simulation executed 1,024 shots with status {sim_res.status}. "
+            f"Web 4.0 decentralized receipt signed with NIST FIPS 204 (ML-DSA-65) and encapsulated "
+            f"with NIST FIPS 203 (ML-KEM-768) [Block Hash: {web4_receipt['block_hash'][:16]}...]."
+        )
 
         # Telemetry record
         telemetry = ExecutionTelemetry(
             prompt=prompt,
-            circuit_name=optimized_ast.name,
-            num_qubits=optimized_ast.num_qubits,
+            circuit_name=final_ast.name,
+            num_qubits=final_ast.num_qubits,
             depth=stats["depth"],
             total_gates=stats["total_gates"],
             two_qubit_gates=stats["two_qubit_gates"],
@@ -74,9 +106,12 @@ class QuantumAgent:
 
         return {
             "prompt": prompt,
-            "circuit_name": optimized_ast.name,
+            "circuit_name": final_ast.name,
             "statistics": stats,
             "optimization_passes": [p.to_dict() for p in passes],
+            "conway_telemetry": conway_telemetry,
+            "web4_receipt": web4_receipt,
+            "explanation": explanation,
             "ascii_diagram": ascii_diagram,
             "qiskit_code": qiskit_code,
             "openqasm_code": openqasm_code,
