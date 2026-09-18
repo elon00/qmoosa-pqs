@@ -99,17 +99,27 @@ def run_master_test_suite():
             print(f"  [FAIL] Prompt: '{prompt}' -> {e}")
             agent_success = False
 
-    # Step 7: Live Quantum Hardware Gateway Execution Proofs
-    print("\n--- Step 7: Running Live Quantum Hardware Gateway Execution Proofs ---")
+    # Step 7: Live Quantum Hardware Gateway Execution & Fallback Honesty Proofs
+    print("\n--- Step 7: Running Live Quantum Hardware Gateway Execution & Fallback Honesty Proofs ---")
     hw_res = HardwareGatewayDispatcher.run_all_hardware_verifications()
     hw_success = (hw_res["status"] == "HARDWARE_GATEWAY_VERIFIED")
     print(f"  [HARDWARE] Status: {hw_res['status']}")
+    print(f"             Reported Execution Mode: {hw_res['execution_mode_reported']}")
+    print(f"             Fallback Honesty Verified: {hw_res['fallback_honesty_verified']}")
     print(f"             IBM Quantum (Heron 133Q): Job={hw_res['ibm_quantum_gateway']['job_id']} | Mode={hw_res['ibm_quantum_gateway']['execution_mode']}")
     print(f"             Origin Quantum (Wukong 72Q): Job={hw_res['origin_quantum_gateway']['job_id']} | Mode={hw_res['origin_quantum_gateway']['execution_mode']}")
     print(f"             All Backends Operational: {hw_res['all_backends_operational']}")
 
-    # Step 8: External NIST CSRC PQC Benchmark KAT Verifications
-    print("\n--- Step 8: Running External NIST CSRC PQC Benchmark KAT Proofs ---")
+    # Step 8: Independent IBM Quantum & Origin Quantum Provider Hardware Attestation
+    print("\n--- Step 8: Running Independent IBM Quantum & Origin Quantum Provider Receipt Proofs ---")
+    provider_receipts = HardwareGatewayDispatcher.run_provider_receipt_verifications()
+    receipts_success = (provider_receipts["status"] == "PROVIDER_RECEIPTS_VERIFIED")
+    print(f"  [RECEIPTS] Status: {provider_receipts['status']}")
+    print(f"             IBM Quantum (Heron 133Q): Verified={provider_receipts['ibm_quantum_receipt']['verified']} | Job={provider_receipts['ibm_quantum_receipt']['job_id']} | Digest={provider_receipts['ibm_quantum_receipt']['digest'][:16]}...")
+    print(f"             Origin Quantum (Wukong 72Q): Verified={provider_receipts['origin_quantum_receipt']['verified']} | Task={provider_receipts['origin_quantum_receipt']['task_id']} | Digest={provider_receipts['origin_quantum_receipt']['digest'][:16]}...")
+
+    # Step 9: External NIST CSRC PQC Benchmark KAT Verifications
+    print("\n--- Step 9: Running External NIST CSRC PQC Benchmark KAT Proofs ---")
     ext_kat_res = ExternalNISTKATValidator.run_all_external_kats()
     ext_kat_success = (ext_kat_res["status"] == "EXTERNAL_NIST_KAT_VERIFIED")
     print(f"  [EXT-KAT] Status: {ext_kat_res['status']}")
@@ -131,10 +141,21 @@ def run_master_test_suite():
     print(f"  Web 4.0 Attestation Status    : {'PASS' if web4_success else 'FAIL'}")
     print(f"  Agent E2E Status              : {'PASS' if agent_success else 'FAIL'}")
     print(f"  Hardware Gateway Status       : {'PASS' if hw_success else 'FAIL'}")
+    print(f"  Provider Receipts Status      : {'PASS' if receipts_success else 'FAIL'}")
     print(f"  External NIST KAT Status      : {'PASS' if ext_kat_success else 'FAIL'}")
     print(f"  Execution Time                : {elapsed:.2f} seconds")
 
-    if test_result.wasSuccessful() and kat_success and conway_success and exec_success and web4_success and agent_success and hw_success and ext_kat_success:
+    if (
+        test_result.wasSuccessful()
+        and kat_success
+        and conway_success
+        and exec_success
+        and web4_success
+        and agent_success
+        and hw_success
+        and receipts_success
+        and ext_kat_success
+    ):
         print("  OVERALL VERIFICATION STATUS: VERIFIED_PASS")
         print("==================================================================")
         return 0

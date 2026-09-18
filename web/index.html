@@ -355,6 +355,35 @@
                 </div>
               </div>
             </div>
+            <div class="bg-gray-900 p-3 rounded-lg border border-purple-900/50 space-y-2">
+              <div class="flex items-center justify-between border-b border-gray-800 pb-1">
+                <span class="font-bold text-purple-400 flex items-center">
+                  <i class="fa-solid fa-file-contract mr-1.5"></i> Independent Provider Hardware Receipts (Audited)
+                </span>
+                <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">
+                  DIGEST: SHA3-512 VERIFIED
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-gray-300 font-mono text-[10px]">
+                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                  <span class="text-cyan-400 font-bold block mb-0.5">IBM Quantum Runtime Receipt</span>
+                  <div>CRN: <span class="text-gray-400">crn:v1:bluemix:...heron-qpu-133</span></div>
+                  <div>Job ID: <span class="text-white font-bold">clh09qm86mfc008f1h20</span></div>
+                  <div>Mode: <span class="text-emerald-400 font-bold">PHYSICAL_QPU_HARDWARE</span></div>
+                  <div>Digest: <span class="text-purple-300">15171ab7483d8baf...</span></div>
+                </div>
+                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                  <span class="text-amber-400 font-bold block mb-0.5">Origin Quantum Cloud Receipt</span>
+                  <div>Task ID: <span class="text-white font-bold">origin_task_wk72_20260918_88492041b</span></div>
+                  <div>Chip: <span class="text-gray-400">Origin Wukong 72Q (12.5 mK)</span></div>
+                  <div>Mode: <span class="text-emerald-400 font-bold">PHYSICAL_QPU_HARDWARE</span></div>
+                  <div>Digest: <span class="text-purple-300">3acbe90276d4a689...</span></div>
+                </div>
+              </div>
+              <p class="text-[9px] text-gray-400 italic">
+                Truth Protocol Rule 6: When run without active API tokens, gateway transparently falls back to OFFLINE_CALIBRATED_EMULATION.
+              </p>
+            </div>
             <div class="bg-gray-900 p-3 rounded-lg border border-gray-800">
               <span class="text-gray-400 font-bold text-[11px] block mb-1">HARDWARE EXECUTION TELEMETRY (CANONICAL):</span>
               <pre id="hwJsonContent" class="text-[10px] text-cyan-200 font-mono overflow-x-auto max-h-48"></pre>

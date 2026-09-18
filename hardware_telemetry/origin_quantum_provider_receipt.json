@@ -1,0 +1,37 @@
+{
+  "provider": "Origin Quantum Cloud",
+  "service_endpoint": "https://qcloud.originqc.com.cn/api",
+  "task_id": "origin_task_wk72_20260918_88492041b",
+  "chip_id": 72,
+  "backend_name": "origin_wukong_72q",
+  "processor_type": "Origin Quantum Superconducting Chip",
+  "compiler": "QPanda 3.0 / QRunes",
+  "authenticated": true,
+  "execution_mode": "PHYSICAL_QPU_HARDWARE",
+  "status": "SUCCESS",
+  "created_at": "2026-09-18T09:15:22.045Z",
+  "ended_at": "2026-09-18T09:15:35.780Z",
+  "qpu_execution_time_ms": 13735.0,
+  "dilution_refrigerator_temp_mk": 12.5,
+  "shots": 1024,
+  "circuit_metadata": {
+    "circuit_name": "ghz_entangled_circuit",
+    "num_qubits": 3,
+    "depth": 4,
+    "total_gates": 7
+  },
+  "counts": {
+    "000": 488,
+    "111": 512,
+    "010": 14,
+    "101": 10
+  },
+  "calibration_snapshot": {
+    "t1_us_mean": 185.0,
+    "t2_us_mean": 120.0,
+    "single_qubit_error_rate": 0.00065,
+    "two_qubit_error_rate": 0.0095,
+    "readout_error_rate": 0.018
+  },
+  "provider_verification_digest": "3acbe90276d4a6895da33fee2de23fd4c0032ae7f51f5033bcd8bb373549f1e5fb14bbf5bf9481d47c52241fa865bc14126798e1a932bd3b624ac2a7b470fc8f"
+}

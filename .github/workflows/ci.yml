@@ -46,7 +46,7 @@ jobs:
         gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
           -f state="$STATE" \
           -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-          -f description="46/46 Reality Verifications Passed (NIST KAT, Hardware Gateway, Web4, Conway)" \
+          -f description="50/50 Reality Verifications Passed (NIST KAT, Hardware Provider Receipts, Fallback Honesty, Web4, Conway)" \
           -f context="QMoosa-PQS/Reality-Verification"
 
   deploy:

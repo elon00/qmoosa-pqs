@@ -74,7 +74,7 @@
 2. **`core/conway_engine.py`**:
    - **Deterministic Classical Cellular Computation Layer**. Implements Conway's Game of Life (B3/S23 rule), `CellularGridRouter` for 2D QPU coupling grids, and `ConwayEntropyGenerator`. Explicitly designated as a classical cellular computation layer, not quantum hardware.
 3. **`core/hardware_gateway.py`**:
-   - **Live Quantum Hardware Execution Gateway**. Implements operational execution clients for **IBM Quantum Runtime** (`IBMQRuntimeGateway` on IBM Heron 133-qubit heavy-hex lattice) and **Origin Quantum Cloud** (`OriginQuantumGateway` on Origin Wukong 72-qubit chip). Supports authenticated cloud submission via API tokens and calibrated physical transmon execution with real QPU parameters ($T_1, T_2$, gate/readout errors, job IDs).
+   - **Live Quantum Hardware Execution Gateway & Provider Receipt Validator**. Implements operational execution clients for **IBM Quantum Runtime** (`IBMQRuntimeGateway` on IBM Heron 133-qubit heavy-hex lattice) and **Origin Quantum Cloud** (`OriginQuantumGateway` on Origin Wukong 72-qubit chip). Enforces the zero-false-claim boundary: reports `OFFLINE_CALIBRATED_EMULATION` when unauthenticated, and `PHYSICAL_CLOUD_EXECUTED` when authenticated. Features `ProviderReceiptValidator` which cryptographically validates authentic provider execution receipts (`clh09...` and `origin_task_wk72_...`) via SHA3-512 digests.
 4. **`core/nist_kat_data.py`**:
    - **External NIST CSRC Cryptographic KAT Benchmark**. Validates ML-KEM-768 and ML-DSA-65 against official deterministic Known-Answer Test vectors from NIST Computer Security Resource Center.
 5. **`core/ast_circuit.py`**:

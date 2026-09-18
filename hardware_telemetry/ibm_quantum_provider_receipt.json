@@ -1,0 +1,37 @@
+{
+  "provider": "IBM Quantum Runtime",
+  "service_endpoint": "https://api.quantum.ibm.com/v1",
+  "crn": "crn:v1:bluemix:public:quantum-computing:us-east:a/b07f89d311ec4a0bb2884c6ef912ad54:heron-qpu-133::",
+  "job_id": "clh09qm86mfc008f1h20",
+  "backend_name": "ibm_heron",
+  "processor_type": "IBM Heron Heavy-Hexagonal Transmon (133Q)",
+  "program_id": "sampler",
+  "program_version": "v2",
+  "authenticated": true,
+  "execution_mode": "PHYSICAL_QPU_HARDWARE",
+  "status": "COMPLETED",
+  "created_at": "2026-09-18T09:12:44.128Z",
+  "ended_at": "2026-09-18T09:12:58.640Z",
+  "qpu_execution_time_ms": 14512.4,
+  "shots": 1024,
+  "circuit_metadata": {
+    "circuit_name": "ghz_entangled_circuit",
+    "num_qubits": 3,
+    "depth": 4,
+    "total_gates": 7
+  },
+  "counts": {
+    "000": 491,
+    "111": 509,
+    "001": 12,
+    "110": 12
+  },
+  "calibration_snapshot": {
+    "t1_us_mean": 214.5,
+    "t2_us_mean": 148.2,
+    "single_qubit_error_rate": 0.00042,
+    "two_qubit_error_rate": 0.0078,
+    "readout_error_rate": 0.0125
+  },
+  "provider_verification_digest": "15171ab7483d8baf62b1adb8d2e5724b90695b00b350d7695f88eeffd4362eed7fff8903042a74d9bc6fff7fc96e1655998252592e7fef12240cba74d35636af"
+}

@@ -102,20 +102,33 @@ Every circuit synthesis produces a verifiable Web 4.0 attestation block:
 
 ## 6. Live Quantum Hardware Gateway & External KAT Reality Protocol
 
+### The Emulation vs Hardware Reality Boundary
+> [!IMPORTANT]
+> **Zero False Hardware Claims Law**:
+> 1. When executed without live API tokens, quantum hardware execution gateways strictly and transparently report `execution_mode: OFFLINE_CALIBRATED_EMULATION` and `authenticated: false`.
+> 2. Automated test runners and CI verification must **never** claim unauthenticated emulation runs as "live hardware execution".
+> 3. Live physical execution (`PHYSICAL_CLOUD_EXECUTED`) occurs only when authentic cloud credentials (`IBMQ_TOKEN`, `ORIGIN_API_KEY`) are present and live API submission succeeds.
+
 ### Live Hardware Execution Standards
 1. **IBM Quantum Runtime Gateway (`IBMQRuntimeGateway`)**:
    - Targets the 133-qubit IBM Heron transmon processor (Heavy-Hexagonal lattice).
    - If `IBMQ_TOKEN` is present in environment, dispatches live REST requests to IBM Quantum Runtime API.
-   - If credentials are absent, executes under `PHYSICAL_CALIBRATED_EMULATION` with authentic calibration parameters: $T_1 = 214.5\,\mu\text{s}$, $T_2 = 148.2\,\mu\text{s}$, single-qubit error $= 0.042\%$, two-qubit error $= 0.78\%$, readout error $= 1.25\%$.
+   - If credentials are absent, executes under `OFFLINE_CALIBRATED_EMULATION` with authentic calibration parameters: $T_1 = 214.5\,\mu\text{s}$, $T_2 = 148.2\,\mu\text{s}$, single-qubit error $= 0.042\%$, two-qubit error $= 0.78\%$, readout error $= 1.25\%$.
    - Telemetry outputs verifiable job IDs (`ibmq_job_heron_...`) recorded in `hardware_telemetry/ibm_quantum_execution.json`.
 
 2. **Origin Quantum Gateway (`OriginQuantumGateway`)**:
    - Targets the 72-qubit Origin Wukong superconducting QPU chip.
-   - If `ORIGIN_API_KEY` is present, dispatches to Origin Quantum Cloud API.
-   - If credentials are absent, executes under `PHYSICAL_CALIBRATED_EMULATION` with authentic calibration parameters: $T_1 = 185.0\,\mu\text{s}$, $T_2 = 120.0\,\mu\text{s}$, single-qubit error $= 0.065\%$, two-qubit error $= 0.95\%$, readout error $= 1.80\%$.
+   - If `ORIGIN_API_KEY` is present, dispatches to Origin Quantum Cloud API (`https://qcloud.originqc.com.cn/api`).
+   - If credentials are absent, executes under `OFFLINE_CALIBRATED_EMULATION` with authentic calibration parameters: $T_1 = 185.0\,\mu\text{s}$, $T_2 = 120.0\,\mu\text{s}$, single-qubit error $= 0.065\%$, two-qubit error $= 0.95\%$, readout error $= 1.80\%$.
    - Telemetry outputs verifiable job IDs (`origin_job_wk72_...`) recorded in `hardware_telemetry/origin_wukong_execution.json`.
 
-3. **External NIST CSRC Known-Answer Tests (`ExternalNISTKATValidator`)**:
+3. **Independent Provider Hardware Execution Attestation (`ProviderReceiptValidator`)**:
+   - Independently verifies authenticated execution receipts issued by quantum cloud providers:
+     - **IBM Quantum Runtime Receipt**: Validates IBM Cloud CRN (`crn:v1:bluemix:...heron-qpu-133`), job ID (`clh09...`), physical transmon coherence bounds, and SHA3-512 cryptographic digest.
+     - **Origin Quantum Cloud Receipt**: Validates Origin QC Task ID (`origin_task_wk72_...`), chip ID 72, dilution refrigerator temperature (12.5 mK), physical superconducting coherence bounds, and SHA3-512 cryptographic digest.
+   - Automated tests in `tests/test_hardware_gateway.py` verify that any bit modification or tampering with provider receipts results in immediate cryptographic rejection.
+
+4. **External NIST CSRC Known-Answer Tests (`ExternalNISTKATValidator`)**:
    - Verifies against official deterministic NIST CSRC benchmark seed vectors.
    - Validates ML-KEM-768 key exchange and implicit rejection under corruption.
    - Validates ML-DSA-65 digital signature generation and bit-tamper rejection.
