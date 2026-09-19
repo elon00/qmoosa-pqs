@@ -1,8 +1,8 @@
 {
   "schema": "qmoosa.qpu.certification.v1",
-  "started_at": "2026-09-18T13:54:57.515540+00:00",
+  "started_at": "2026-09-19T02:05:59.074223+00:00",
   "repo": "elon00/qmoosa-pqs",
-  "commit": "fa1156fc6d9a1171744b41e0756e0e29f289f599",
+  "commit": "8f2daa7942c7c6a15f8a4a276eccf8daea3644df",
   "canonical_control_plane": "elon00/bountyhunter-os",
   "status": "BLOCKED",
   "gates": {
@@ -11,34 +11,34 @@
       "evidence": {
         "schema": "qmoosa.qpu.manifest.v1",
         "repo": "elon00/qmoosa-pqs",
-        "commit": "fa1156fc6d9a1171744b41e0756e0e29f289f599",
-        "provider": "origin",
-        "backend": "origin_wukong_72q",
+        "commit": "8f2daa7942c7c6a15f8a4a276eccf8daea3644df",
+        "provider": "ibm",
+        "backend": "ibm_heron_v2_133q",
         "shots": 1024,
-        "created_at": "2026-09-18T13:54:57.515591+00:00"
+        "created_at": "2026-09-19T02:05:59.074275+00:00"
       }
     },
     "R11_CI_CD_VERIFIED": {
       "status": "PASS",
-      "evidence": "\n..................................................\n----------------------------------------------------------------------\nRan 50 tests in 21.816s\n\nOK\n"
+      "evidence": "\n.....................C:\\Python314\\Lib\\tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 403: 'Forbidden'>\n  _warnings.warn(self.warn_message, ResourceWarning)\n....C:\\Python314\\Lib\\tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 401: 'Unauthorized'>\n  _warnings.warn(self.warn_message, ResourceWarning)\n............................\n----------------------------------------------------------------------\nRan 53 tests in 38.712s\n\nOK\n"
     },
     "R1_PROVIDER_REACHABLE": {
       "status": "PASS",
       "evidence": {
-        "provider": "origin",
-        "endpoint": "https://qcloud.originqc.com.cn/api/task/submit",
+        "provider": "ibm",
+        "endpoint": "https://quantum.cloud.ibm.com/api/v1/jobs",
         "reachable": true,
-        "http_status": 200,
-        "latency_ms": 964.52,
-        "error": "Origin rejected token: code=401, message=Unauthorized"
+        "http_status": 401,
+        "latency_ms": 326.32,
+        "error": "HTTPError 401: Unauthorized"
       }
     },
     "R2_AUTHENTICATED": {
       "status": "FAIL",
       "evidence": {
         "authenticated": false,
-        "reason": "Origin rejected token: code=401, message=Unauthorized",
-        "http_status": 200
+        "reason": "HTTPError 401: Unauthorized",
+        "http_status": 401
       }
     },
     "R3_JOB_SUBMITTED": {
@@ -86,5 +86,5 @@
       }
     }
   },
-  "finished_at": "2026-09-18T13:55:20.778516+00:00"
+  "finished_at": "2026-09-19T02:06:38.844730+00:00"
 }

@@ -34,14 +34,26 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from core.ast_circuit import QuantumAST
-from core.transpiler import OpenQASMTranspiler, OriginPilotTranspiler
+from core.transpiler import (
+    OpenQASMTranspiler,
+    OriginPilotTranspiler,
+    IonQJSONTranspiler,
+    RigettiQuilTranspiler,
+)
 from core.hardware_gateway import (
     _load_env_file,
     ProviderReceiptValidator,
     ORIGIN_WUKONG_CALIBRATION,
     IBM_HERON_CALIBRATION,
 )
-from core.qpu_adapter import OriginCloudLifecycleAdapter, IBMQCloudLifecycleAdapter
+from core.qpu_adapter import (
+    OriginCloudLifecycleAdapter,
+    IBMQCloudLifecycleAdapter,
+    IonQCloudLifecycleAdapter,
+    AWSBraketCloudLifecycleAdapter,
+    RigettiCloudLifecycleAdapter,
+)
+from core.universal_gateway import UniversalQuantumHub
 
 _load_env_file()
 
@@ -76,9 +88,40 @@ def run_cmd(cmd):
 # ---------------------------------------------------------
 # STAGE 0 (R0): DISCOVER & MANIFEST
 # ---------------------------------------------------------
-provider = os.getenv("QMOOSA_QPU_PROVIDER", "origin").lower()
+# Parse provider from CLI argument or environment variable
+provider = os.getenv("QMOOSA_QPU_PROVIDER", "auto").lower()
+for i, arg in enumerate(sys.argv):
+    if arg == "--provider" and i + 1 < len(sys.argv):
+        provider = sys.argv[i + 1].lower()
+    elif arg.startswith("--provider="):
+        provider = arg.split("=", 1)[1].lower()
+
+if provider == "auto":
+    conf = UniversalQuantumHub.discover_configured_providers()
+    # Prioritize any provider that has credentials configured
+    hw_candidates = [p for p in ["ibm", "origin", "ionq", "aws_braket", "rigetti"] if conf.get(p)]
+    provider = hw_candidates[0] if hw_candidates else "origin"
+
 shots_requested = int(os.getenv("QMOOSA_QPU_SHOTS", "1024"))
-backend_target = "origin_wukong_72q" if provider == "origin" else "ibm_heron_v2_133q"
+
+if provider == "origin":
+    backend_target = "origin_wukong_72q"
+    adapter = OriginCloudLifecycleAdapter()
+elif provider == "ibm":
+    backend_target = "ibm_heron_v2_133q"
+    adapter = IBMQCloudLifecycleAdapter()
+elif provider == "ionq":
+    backend_target = "ionq_aria_1"
+    adapter = IonQCloudLifecycleAdapter()
+elif provider == "aws_braket":
+    backend_target = "braket_rigetti_ankaa_2"
+    adapter = AWSBraketCloudLifecycleAdapter()
+elif provider == "rigetti":
+    backend_target = "rigetti_ankaa_2"
+    adapter = RigettiCloudLifecycleAdapter()
+else:
+    backend_target = "origin_wukong_72q"
+    adapter = OriginCloudLifecycleAdapter()
 
 manifest = {
     "schema": "qmoosa.qpu.manifest.v1",
@@ -91,10 +134,10 @@ manifest = {
 }
 (ART / "run-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 (ART / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-gate("R0_CLAIM", provider in ("origin", "ibm"), manifest)
+gate("R0_CLAIM", provider in ("origin", "ibm", "ionq", "aws_braket", "rigetti"), manifest)
 
 # ---------------------------------------------------------
-# STAGE 1 (R11): SOFTWARE GATE (50 Unit Tests)
+# STAGE 1 (R11): SOFTWARE GATE (50+ Unit Tests)
 # ---------------------------------------------------------
 ok_tests, out_tests = run_cmd([sys.executable, "-m", "unittest", "discover", "-s", "tests"])
 gate("R11_CI_CD_VERIFIED", ok_tests, out_tests)
@@ -110,6 +153,12 @@ circuit.measure_all()
 if provider == "origin":
     circuit_code = OriginPilotTranspiler.transpile(circuit)
     circuit_format = "QRunes"
+elif provider == "ionq":
+    circuit_code = IonQJSONTranspiler.transpile(circuit)
+    circuit_format = "IonQJSON"
+elif provider == "rigetti":
+    circuit_code = RigettiQuilTranspiler.transpile(circuit)
+    circuit_format = "Quil"
 else:
     circuit_code = OpenQASMTranspiler.transpile(circuit)
     circuit_format = "OpenQASM3"
@@ -130,7 +179,6 @@ circuit_manifest = {
 # ---------------------------------------------------------
 # STAGE 3 (R1 & R2): REAL PROVIDER CONNECTIVITY & AUTHENTICATION
 # ---------------------------------------------------------
-adapter = OriginCloudLifecycleAdapter() if provider == "origin" else IBMQCloudLifecycleAdapter()
 probe_res = adapter.probe()
 
 # R1: Must have genuine network TLS handshake & HTTP reachability

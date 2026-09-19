@@ -185,3 +185,86 @@ class OriginPilotTranspiler:
             "    run_origin_pilot_circuit()",
         ])
         return "\n".join(lines)
+
+
+class IonQJSONTranspiler:
+    """Compiles AST to IonQ Native Circuit JSON for direct execution on trapped-ion QPUs."""
+
+    @staticmethod
+    def transpile(ast: QuantumAST) -> str:
+        import json
+        gates_list = []
+        for gate in ast.gates:
+            gt = gate.gate_type
+            if gt == GateType.H:
+                gates_list.append({"gate": "h", "target": gate.targets[0]})
+            elif gt == GateType.X:
+                gates_list.append({"gate": "x", "target": gate.targets[0]})
+            elif gt == GateType.Y:
+                gates_list.append({"gate": "y", "target": gate.targets[0]})
+            elif gt == GateType.Z:
+                gates_list.append({"gate": "z", "target": gate.targets[0]})
+            elif gt == GateType.S:
+                gates_list.append({"gate": "s", "target": gate.targets[0]})
+            elif gt == GateType.T:
+                gates_list.append({"gate": "t", "target": gate.targets[0]})
+            elif gt == GateType.RX:
+                gates_list.append({"gate": "rx", "target": gate.targets[0], "rotation": gate.params[0]})
+            elif gt == GateType.RY:
+                gates_list.append({"gate": "ry", "target": gate.targets[0], "rotation": gate.params[0]})
+            elif gt == GateType.RZ:
+                gates_list.append({"gate": "rz", "target": gate.targets[0], "rotation": gate.params[0]})
+            elif gt == GateType.CX:
+                gates_list.append({"gate": "cnot", "control": gate.controls[0], "target": gate.targets[0]})
+            elif gt == GateType.CZ:
+                gates_list.append({"gate": "cz", "control": gate.controls[0], "target": gate.targets[0]})
+            elif gt == GateType.SWAP:
+                gates_list.append({"gate": "swap", "targets": [gate.targets[0], gate.targets[1]]})
+
+        payload = {
+            "qubits": ast.num_qubits,
+            "circuit": gates_list,
+        }
+        return json.dumps(payload, indent=2)
+
+
+class RigettiQuilTranspiler:
+    """Compiles AST to Rigetti Quil 3.0 specification."""
+
+    @staticmethod
+    def transpile(ast: QuantumAST) -> str:
+        lines = [
+            f"DECLARE ro BIT[{max(1, ast.num_clbits)}]",
+        ]
+        for gate in ast.gates:
+            gt = gate.gate_type
+            if gt == GateType.H:
+                lines.append(f"H {gate.targets[0]}")
+            elif gt == GateType.X:
+                lines.append(f"X {gate.targets[0]}")
+            elif gt == GateType.Y:
+                lines.append(f"Y {gate.targets[0]}")
+            elif gt == GateType.Z:
+                lines.append(f"Z {gate.targets[0]}")
+            elif gt == GateType.S:
+                lines.append(f"S {gate.targets[0]}")
+            elif gt == GateType.T:
+                lines.append(f"T {gate.targets[0]}")
+            elif gt == GateType.RX:
+                lines.append(f"RX({gate.params[0]:.4f}) {gate.targets[0]}")
+            elif gt == GateType.RY:
+                lines.append(f"RY({gate.params[0]:.4f}) {gate.targets[0]}")
+            elif gt == GateType.RZ:
+                lines.append(f"RZ({gate.params[0]:.4f}) {gate.targets[0]}")
+            elif gt == GateType.CX:
+                lines.append(f"CNOT {gate.controls[0]} {gate.targets[0]}")
+            elif gt == GateType.CZ:
+                lines.append(f"CZ {gate.controls[0]} {gate.targets[0]}")
+            elif gt == GateType.SWAP:
+                lines.append(f"SWAP {gate.targets[0]} {gate.targets[1]}")
+            elif gt == GateType.MEASURE:
+                c_idx = gate.classical_target if gate.classical_target is not None else gate.targets[0]
+                lines.append(f"MEASURE {gate.targets[0]} ro[{c_idx}]")
+
+        return "\n".join(lines)
+

@@ -1,9 +1,9 @@
 {
   "schema": "qmoosa.qpu.manifest.v1",
   "repo": "elon00/qmoosa-pqs",
-  "commit": "fa1156fc6d9a1171744b41e0756e0e29f289f599",
-  "provider": "origin",
-  "backend": "origin_wukong_72q",
+  "commit": "8f2daa7942c7c6a15f8a4a276eccf8daea3644df",
+  "provider": "ibm",
+  "backend": "ibm_heron_v2_133q",
   "shots": 1024,
-  "created_at": "2026-09-18T13:56:11.788791+00:00"
+  "created_at": "2026-09-19T02:05:59.074275+00:00"
 }

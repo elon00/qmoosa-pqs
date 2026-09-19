@@ -11,7 +11,13 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from core.ast_circuit import QuantumAST
-from core.transpiler import QiskitTranspiler, OpenQASMTranspiler, OriginPilotTranspiler
+from core.transpiler import (
+    QiskitTranspiler,
+    OpenQASMTranspiler,
+    OriginPilotTranspiler,
+    IonQJSONTranspiler,
+    RigettiQuilTranspiler,
+)
 
 
 class TestTranspilers(unittest.TestCase):
@@ -40,6 +46,26 @@ class TestTranspilers(unittest.TestCase):
         self.assertIn("prog << pq.H(q[0])", qrunes)
         self.assertIn("prog << pq.CNOT(q[0], q[1])", qrunes)
 
+    def test_ionq_json_transpiler(self):
+        import json
+        ionq_json_str = IonQJSONTranspiler.transpile(self.ast)
+        payload = json.loads(ionq_json_str)
+        self.assertEqual(payload["qubits"], 2)
+        self.assertEqual(payload["circuit"][0]["gate"], "h")
+        self.assertEqual(payload["circuit"][0]["target"], 0)
+        self.assertEqual(payload["circuit"][1]["gate"], "cnot")
+        self.assertEqual(payload["circuit"][1]["control"], 0)
+        self.assertEqual(payload["circuit"][1]["target"], 1)
+
+    def test_rigetti_quil_transpiler(self):
+        quil = RigettiQuilTranspiler.transpile(self.ast)
+        self.assertIn("DECLARE ro BIT[2]", quil)
+        self.assertIn("H 0", quil)
+        self.assertIn("CNOT 0 1", quil)
+        self.assertIn("MEASURE 0 ro[0]", quil)
+        self.assertIn("MEASURE 1 ro[1]", quil)
+
 
 if __name__ == "__main__":
     unittest.main()
+

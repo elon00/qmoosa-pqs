@@ -177,7 +177,7 @@ class IBMQRuntimeGateway:
     Interfaces with IBM Quantum Cloud (OpenQASM 3.0 / Qiskit Runtime endpoint).
     """
 
-    API_BASE = "https://api.quantum.ibm.com/v1"
+    API_BASE = "https://quantum.cloud.ibm.com/api/v1"
 
     def __init__(self, api_token: Optional[str] = None):
         if api_token is not None:
