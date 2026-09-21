@@ -1,0 +1,25 @@
+name: PR Reality Verification
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  reality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run repository verification suite
+        run: python tests/run_all_tests.py
+      - name: Validate QPU evidence policy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path(".github/workflows/ci.yml").read_text()
+          assert "continue-on-error: true" not in s
+          assert "python tools/one-click-qpu-certify.py || true" not in s
+          assert '"status":"BLOCKED"' in s
+          assert "live_qpu_verified" in s
+          print("QPU evidence policy is fail-closed.")
+          PY
