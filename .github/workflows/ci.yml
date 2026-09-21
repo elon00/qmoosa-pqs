@@ -33,10 +33,9 @@ jobs:
       run: |
         python tests/run_all_tests.py
 
-    - name: Run BountyHunter OS Fail-Closed QPU Certification Gate
-      continue-on-error: true
+    - name: Run Fail-Closed QPU Certification Gate
       run: |
-        python tools/one-click-qpu-certify.py || true
+        python tools/one-click-qpu-certify.py
 
     - name: Upload QPU Certification Evidence Artifacts
       uses: actions/upload-artifact@v4
@@ -57,7 +56,7 @@ jobs:
         gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
           -f state="$STATE" \
           -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-          -f description="50/50 Reality Verifications Passed (NIST KAT, Hardware Provider Receipts, Fallback Honesty, Web4, Conway)" \
+          -f description="Reality verification passed; live-QPU certification is fail-closed and requires provider evidence" \
           -f context="QMoosa-PQS/Reality-Verification"
 
   deploy:
