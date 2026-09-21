@@ -33,10 +33,18 @@ jobs:
       run: |
         python tests/run_all_tests.py
 
-    - name: Run BountyHunter OS Fail-Closed QPU Certification Gate
-      continue-on-error: true
+    - name: Run QPU Certification Evidence Gate
+      env:
+        IBMQ_TOKEN: ${{ secrets.IBMQ_TOKEN }}
+        ORIGIN_API_KEY: ${{ secrets.ORIGIN_API_KEY }}
       run: |
-        python tools/one-click-qpu-certify.py || true
+        if [ -z "$IBMQ_TOKEN" ] && [ -z "$ORIGIN_API_KEY" ]; then
+          echo "Live-QPU provider credentials are not configured; certification remains BLOCKED, not failed."
+          mkdir -p artifacts/qpu-certification
+          printf '%s\n' '{"status":"BLOCKED","reason":"provider credentials not configured","live_qpu_verified":false}' > artifacts/qpu-certification/status.json
+        else
+          python tools/one-click-qpu-certify.py
+        fi
 
     - name: Upload QPU Certification Evidence Artifacts
       uses: actions/upload-artifact@v4
@@ -51,13 +59,15 @@ jobs:
       run: |
         STATUS="${{ job.status }}"
         STATE="failure"
+        DESCRIPTION="Reality verification failed; inspect CI evidence"
         if [ "$STATUS" = "success" ]; then
           STATE="success"
+          DESCRIPTION="Repository verification passed; live-QPU status is evidence-dependent"
         fi
         gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
           -f state="$STATE" \
           -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-          -f description="50/50 Reality Verifications Passed (NIST KAT, Hardware Provider Receipts, Fallback Honesty, Web4, Conway)" \
+          -f description="$DESCRIPTION" \
           -f context="QMoosa-PQS/Reality-Verification"
 
   deploy:
