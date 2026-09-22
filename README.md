@@ -49,7 +49,7 @@ Neither status means physical-QPU execution is verified.
 
 ## Security improvements
 
-Provider HTTPS uses the system trust store with certificate and hostname verification enabled. The gateway no longer falls back to an unverified TLS context.
+Provider HTTPS and independent provider re-query paths use the system trust store with certificate and hostname verification enabled. CI now rejects `ssl.CERT_NONE`, disabled hostname checking, and unverified SSL contexts anywhere in Python provider code.
 
 The direct provider adapters also no longer return local simulator counts as if they were completed provider results.
 
