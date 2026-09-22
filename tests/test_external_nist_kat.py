@@ -1,5 +1,5 @@
 """
-Unit tests validating against external official NIST CSRC Known-Answer Test vectors.
+Unit tests validating against external repository-defined CSRC Known-Answer Test vectors.
 Proves external cryptographic conformance for NIST FIPS 203 & FIPS 204.
 """
 
@@ -15,12 +15,12 @@ from core.nist_kat_data import ExternalNISTKATValidator
 
 
 class TestExternalNISTKAT(unittest.TestCase):
-    """Rigorous conformance tests against official NIST benchmark test vectors."""
+    """Rigorous conformance tests against repository-defined benchmark test vectors."""
 
     def test_nist_fips_203_kem_external_vectors(self):
-        """Validates ML-KEM-768 against official NIST deterministic test seeds."""
+        """Validates ML-KEM-768 against repository-defined deterministic test seeds."""
         report = ExternalNISTKATValidator.validate_ml_kem_768_vectors()
-        self.assertEqual(report["status"], "EXTERNAL_NIST_KAT_VERIFIED")
+        self.assertEqual(report["status"], "REPOSITORY_VECTOR_CHECKS_PASS")
         self.assertEqual(report["security_category"], 3)
         self.assertEqual(report["nist_table_1_equivalent"], "AES-192 key search")
         self.assertGreaterEqual(report["vectors_evaluated"], 3)
@@ -31,9 +31,9 @@ class TestExternalNISTKAT(unittest.TestCase):
             self.assertTrue(vec["implicit_rejection_valid"])
 
     def test_nist_fips_204_dsa_external_vectors(self):
-        """Validates ML-DSA-65 against official NIST deterministic test seeds."""
+        """Validates ML-DSA-65 against repository-defined deterministic test seeds."""
         report = ExternalNISTKATValidator.validate_ml_dsa_65_vectors()
-        self.assertEqual(report["status"], "EXTERNAL_NIST_KAT_VERIFIED")
+        self.assertEqual(report["status"], "REPOSITORY_VECTOR_CHECKS_PASS")
         self.assertEqual(report["security_category"], 3)
         self.assertEqual(report["nist_table_1_equivalent"], "AES-192 key search")
         self.assertGreaterEqual(report["vectors_evaluated"], 3)
@@ -47,7 +47,7 @@ class TestExternalNISTKAT(unittest.TestCase):
     def test_run_all_external_kats_bundle(self):
         """Validates overall external NIST KAT verification suite."""
         bundle = ExternalNISTKATValidator.run_all_external_kats()
-        self.assertEqual(bundle["status"], "EXTERNAL_NIST_KAT_VERIFIED")
+        self.assertEqual(bundle["status"], "REPOSITORY_VECTOR_CHECKS_PASS")
 
 
 if __name__ == "__main__":
