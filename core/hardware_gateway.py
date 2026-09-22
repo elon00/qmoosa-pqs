@@ -19,14 +19,13 @@ import urllib.error
 import ssl
 
 def _get_ssl_context() -> ssl.SSLContext:
-    """Returns an SSL context that gracefully negotiates cross-region quantum endpoints."""
-    try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-    except Exception:
-        ctx = ssl._create_unverified_context()
-    return ctx
+    """Return the system trust-store TLS context.
+
+    Provider connections fail closed on certificate or hostname validation
+    errors. Production code must never silently downgrade to an unverified
+    TLS context.
+    """
+    return ssl.create_default_context()
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -118,7 +117,12 @@ ORIGIN_WUKONG_CALIBRATION = QPUCalibrationMetrics(
 
 
 class HardwareJobResult:
-    """Stores full machine-verifiable execution outcome from a quantum hardware backend."""
+    """Stores a gateway result.
+
+    Counts/probabilities are provider results only when a completed provider
+    result has actually been fetched. Current direct gateways otherwise
+    return local emulation results or submission-only metadata.
+    """
 
     def __init__(
         self,
@@ -172,73 +176,88 @@ class HardwareJobResult:
 
 
 class IBMQRuntimeGateway:
-    """
-    Live Hardware Client for IBM Quantum Runtime.
-    Interfaces with IBM Quantum Cloud (OpenQASM 3.0 / Qiskit Runtime endpoint).
-    """
+    """IBM Quantum submission adapter with truthful execution-state reporting."""
 
     API_BASE = "https://quantum.cloud.ibm.com/api/v1"
 
     def __init__(self, api_token: Optional[str] = None):
-        if api_token is not None:
-            self.api_token = api_token
-        else:
-            self.api_token = os.environ.get("IBMQ_TOKEN") or os.environ.get("QISKIT_IBM_TOKEN")
+        self.api_token = (
+            api_token
+            if api_token is not None
+            else os.environ.get("IBMQ_TOKEN") or os.environ.get("QISKIT_IBM_TOKEN")
+        )
         self.calibration = IBM_HERON_CALIBRATION
 
     def submit_and_execute(self, circuit: QuantumAST, shots: int = 1024) -> HardwareJobResult:
-        """
-        Executes quantum circuit on IBM Quantum backend.
-        If IBMQ_TOKEN is present, submits via live HTTPS endpoint;
-        otherwise executes in Calibrated Transmon Hardware Emulation mode with full physical telemetry.
+        """Submit when credentials exist; otherwise run local calibrated emulation.
+
+        A successful POST is reported as CLOUD_SUBMISSION_ACCEPTED_RESULT_NOT_FETCHED.
+        It is deliberately NOT reported as physical execution because this adapter
+        does not yet poll a terminal provider state and retrieve provider counts.
         """
         start_time = time.perf_counter()
         qasm_code = OpenQASMTranspiler.transpile(circuit)
         timestamp = datetime.now(timezone.utc).isoformat()
-
-        # Deterministic Hardware Job ID based on circuit hash & timestamp
         circuit_hash = hashlib.sha256((qasm_code + timestamp).encode("utf-8")).hexdigest()[:16]
-        job_id = f"ibmq_job_heron_{circuit_hash}"
+        local_job_id = f"local_ibm_submission_{circuit_hash}"
 
         authenticated = bool(self.api_token)
-        executed_live = False
+        provider_job_id: Optional[str] = None
 
-        # Attempt live API submission if token is present
         if authenticated:
             try:
                 req = urllib.request.Request(
                     f"{self.API_BASE}/jobs",
-                    data=json.dumps({
-                        "program_id": "sampler",
-                        "backend": self.calibration.backend_name,
-                        "params": {"circuits": [qasm_code], "shots": shots}
-                    }).encode("utf-8"),
+                    data=json.dumps(
+                        {
+                            "program_id": "sampler",
+                            "backend": self.calibration.backend_name,
+                            "params": {"circuits": [qasm_code], "shots": shots},
+                        }
+                    ).encode("utf-8"),
                     headers={
                         "Authorization": f"Bearer {self.api_token}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
-                    method="POST"
+                    method="POST",
                 )
-                ctx = _get_ssl_context()
-                with urllib.request.urlopen(req, timeout=3, context=ctx) as resp:
-                    if resp.status in (200, 201):
+                with urllib.request.urlopen(
+                    req, timeout=10, context=_get_ssl_context()
+                ) as resp:
+                    if resp.status in (200, 201, 202):
                         payload = json.loads(resp.read().decode("utf-8"))
-                        if isinstance(payload, dict) and ("id" in payload or "job_id" in payload):
-                            executed_live = True
-            except Exception:
-                # Fallback to calibrated physical execution mode
-                executed_live = False
+                        if isinstance(payload, dict):
+                            candidate = payload.get("id") or payload.get("job_id")
+                            if candidate:
+                                provider_job_id = str(candidate)
+            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, json.JSONDecodeError):
+                provider_job_id = None
 
-        # Physical readout execution (incorporating transmon error model)
+        if provider_job_id:
+            return HardwareJobResult(
+                job_id=provider_job_id,
+                backend_name=self.calibration.backend_name,
+                backend_provider="IBM Quantum",
+                authenticated=True,
+                execution_mode="CLOUD_SUBMISSION_ACCEPTED_RESULT_NOT_FETCHED",
+                status="SUBMITTED",
+                shots=shots,
+                counts={},
+                probabilities={},
+                calibration=self.calibration,
+                circuit_depth=circuit.calculate_depth(),
+                gate_count=len(circuit.gates),
+                execution_time_ms=(time.perf_counter() - start_time) * 1000.0,
+                timestamp=timestamp,
+            )
+
         sim = QuantumExecutionEngine().execute(circuit, shots=shots, seed=42)
-        exec_time = (time.perf_counter() - start_time) * 1000.0 + 8.5  # include hardware latency
-
         return HardwareJobResult(
-            job_id=job_id,
+            job_id=local_job_id,
             backend_name=self.calibration.backend_name,
-            backend_provider="IBM Quantum",
-            authenticated=authenticated,
-            execution_mode="PHYSICAL_CLOUD_EXECUTED" if executed_live else "OFFLINE_CALIBRATED_EMULATION",
+            backend_provider="IBM Quantum (profile emulation)",
+            authenticated=False,
+            execution_mode="OFFLINE_CALIBRATED_EMULATION",
             status="COMPLETED",
             shots=shots,
             counts=sim.counts,
@@ -246,75 +265,95 @@ class IBMQRuntimeGateway:
             calibration=self.calibration,
             circuit_depth=circuit.calculate_depth(),
             gate_count=len(circuit.gates),
-            execution_time_ms=exec_time,
+            execution_time_ms=(time.perf_counter() - start_time) * 1000.0,
             timestamp=timestamp,
         )
 
 
 class OriginQuantumGateway:
-    """
-    Live Hardware Client for Origin Quantum Cloud.
-    Interfaces with Origin Quantum (QRunes / QPanda backend endpoint).
-    """
+    """Origin Quantum submission adapter with truthful execution-state reporting."""
 
     API_BASE = "https://qcloud.originqc.com.cn/api"
 
     def __init__(self, api_key: Optional[str] = None):
-        if api_key is not None:
-            self.api_key = api_key
-        else:
-            self.api_key = os.environ.get("ORIGIN_API_KEY")
+        self.api_key = api_key if api_key is not None else os.environ.get("ORIGIN_API_KEY")
         self.calibration = ORIGIN_WUKONG_CALIBRATION
 
     def submit_and_execute(self, circuit: QuantumAST, shots: int = 1024) -> HardwareJobResult:
-        """
-        Executes quantum circuit on Origin Quantum Wukong QPU.
+        """Submit when credentials exist; otherwise run local calibrated emulation.
+
+        A successful submission is not equivalent to a completed physical QPU
+        execution. Provider results must be polled and retrieved separately.
         """
         start_time = time.perf_counter()
         qrunes_code = OriginPilotTranspiler.transpile(circuit)
         timestamp = datetime.now(timezone.utc).isoformat()
-
         circuit_hash = hashlib.sha256((qrunes_code + timestamp).encode("utf-8")).hexdigest()[:16]
-        job_id = f"origin_job_wk72_{circuit_hash}"
+        local_job_id = f"local_origin_submission_{circuit_hash}"
 
         authenticated = bool(self.api_key)
-        executed_live = False
+        provider_job_id: Optional[str] = None
 
         if authenticated:
             try:
                 req = urllib.request.Request(
                     f"{self.API_BASE}/task/submit",
-                    data=json.dumps({
-                        "chipId": 72,
-                        "taskType": "QRunes",
-                        "script": qrunes_code,
-                        "shots": shots
-                    }).encode("utf-8"),
+                    data=json.dumps(
+                        {
+                            "chipId": 72,
+                            "taskType": "QRunes",
+                            "script": qrunes_code,
+                            "shots": shots,
+                        }
+                    ).encode("utf-8"),
                     headers={
                         "ApiKey": self.api_key,
                         "token": self.api_key,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
-                    method="POST"
+                    method="POST",
                 )
-                ctx = _get_ssl_context()
-                with urllib.request.urlopen(req, timeout=3, context=ctx) as resp:
-                    if resp.status == 200:
+                with urllib.request.urlopen(
+                    req, timeout=10, context=_get_ssl_context()
+                ) as resp:
+                    if resp.status in (200, 201, 202):
                         payload = json.loads(resp.read().decode("utf-8"))
-                        if isinstance(payload, dict) and (payload.get("success") is True or payload.get("code") == 200 and payload.get("message") != "Unauthorized"):
-                            executed_live = True
-            except Exception:
-                executed_live = False
+                        if isinstance(payload, dict):
+                            candidate = (
+                                payload.get("taskId")
+                                or payload.get("task_id")
+                                or payload.get("id")
+                            )
+                            if candidate:
+                                provider_job_id = str(candidate)
+            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, json.JSONDecodeError):
+                provider_job_id = None
+
+        if provider_job_id:
+            return HardwareJobResult(
+                job_id=provider_job_id,
+                backend_name=self.calibration.backend_name,
+                backend_provider="Origin Quantum",
+                authenticated=True,
+                execution_mode="CLOUD_SUBMISSION_ACCEPTED_RESULT_NOT_FETCHED",
+                status="SUBMITTED",
+                shots=shots,
+                counts={},
+                probabilities={},
+                calibration=self.calibration,
+                circuit_depth=circuit.calculate_depth(),
+                gate_count=len(circuit.gates),
+                execution_time_ms=(time.perf_counter() - start_time) * 1000.0,
+                timestamp=timestamp,
+            )
 
         sim = QuantumExecutionEngine().execute(circuit, shots=shots, seed=42)
-        exec_time = (time.perf_counter() - start_time) * 1000.0 + 12.0
-
         return HardwareJobResult(
-            job_id=job_id,
+            job_id=local_job_id,
             backend_name=self.calibration.backend_name,
-            backend_provider="Origin Quantum",
-            authenticated=authenticated,
-            execution_mode="PHYSICAL_CLOUD_EXECUTED" if executed_live else "OFFLINE_CALIBRATED_EMULATION",
+            backend_provider="Origin Quantum (profile emulation)",
+            authenticated=False,
+            execution_mode="OFFLINE_CALIBRATED_EMULATION",
             status="COMPLETED",
             shots=shots,
             counts=sim.counts,
@@ -322,7 +361,7 @@ class OriginQuantumGateway:
             calibration=self.calibration,
             circuit_depth=circuit.calculate_depth(),
             gate_count=len(circuit.gates),
-            execution_time_ms=exec_time,
+            execution_time_ms=(time.perf_counter() - start_time) * 1000.0,
             timestamp=timestamp,
         )
 
