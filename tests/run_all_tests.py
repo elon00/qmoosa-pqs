@@ -120,12 +120,13 @@ def run_master_test_suite():
     print(f"             Origin Quantum (Wukong 72Q): InternallyConsistent={provider_receipts['origin_quantum_receipt']['internally_consistent']} | Task={provider_receipts['origin_quantum_receipt']['task_id']} | Digest={provider_receipts['origin_quantum_receipt']['digest'][:16]}...")
 
     # Step 9: External NIST CSRC PQC Benchmark KAT Verifications
-    print("\n--- Step 9: Running External NIST CSRC PQC Benchmark KAT Proofs ---")
+    print("\n--- Step 9: Running Repository-Defined FIPS-Referenced PQC Regression Vectors ---")
     ext_kat_res = ExternalNISTKATValidator.run_all_external_kats()
-    ext_kat_success = (ext_kat_res["status"] == "EXTERNAL_NIST_KAT_VERIFIED")
+    ext_kat_success = (ext_kat_res["status"] == "REPOSITORY_VECTOR_CHECKS_PASS")
     print(f"  [EXT-KAT] Status: {ext_kat_res['status']}")
-    print(f"            ML-KEM-768 External KATs: {ext_kat_res['ml_kem_768']['status']} ({ext_kat_res['ml_kem_768']['vectors_evaluated']} vectors)")
-    print(f"            ML-DSA-65 External KATs: {ext_kat_res['ml_dsa_65']['status']} ({ext_kat_res['ml_dsa_65']['vectors_evaluated']} vectors)")
+    print(f"            ML-KEM-768 repository vectors: {ext_kat_res['ml_kem_768']['status']} ({ext_kat_res['ml_kem_768']['vectors_evaluated']} vectors)")
+    print(f"            ML-DSA-65 repository vectors: {ext_kat_res['ml_dsa_65']['status']} ({ext_kat_res['ml_dsa_65']['vectors_evaluated']} vectors)")
+    print("            Official NIST KAT provenance: NOT VERIFIED")
 
     elapsed = time.time() - start_time
     total_run = test_result.testsRun
@@ -143,7 +144,7 @@ def run_master_test_suite():
     print(f"  Agent E2E Status              : {'PASS' if agent_success else 'FAIL'}")
     print(f"  Hardware Gateway Status       : {'PASS' if hw_success else 'FAIL'}")
     print(f"  Receipt Integrity Status      : {'PASS' if receipts_success else 'FAIL'}")
-    print(f"  External NIST KAT Status      : {'PASS' if ext_kat_success else 'FAIL'}")
+    print(f"  PQC Regression Vector Status  : {'PASS' if ext_kat_success else 'FAIL'}")
     print(f"  Execution Time                : {elapsed:.2f} seconds")
 
     if (
