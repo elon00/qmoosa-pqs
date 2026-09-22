@@ -368,245 +368,213 @@ class OriginQuantumGateway:
 
 class ProviderReceiptValidator:
     """
-    Validates machine-verifiable quantum hardware execution receipts issued by cloud QPU providers.
-    Independently verifies:
-    1. Provider identity (IBM Quantum Runtime, Origin Quantum Cloud)
-    2. Cloud job ID / task ID canonical schemas
-    3. Authenticated physical execution mode (PHYSICAL_QPU_HARDWARE)
-    4. Hardware calibration constraints within physical superconducting transmon thresholds
-    5. SHA3-512 provider cryptographic verification digests ensuring payload immutability
-    6. Shot distributions matching quantum mechanical expectations
+    Validate repository-supplied receipt structure and local integrity digests.
+
+    IMPORTANT: these checks do NOT contact IBM/Origin and do NOT verify a
+    provider signature. A matching SHA3-512 digest proves only that the
+    checked-in JSON has not changed relative to its locally computed digest.
     """
 
     @staticmethod
     def compute_digest(data: Dict[str, Any]) -> str:
-        """Computes canonical SHA3-512 digest over execution payload excluding digest field."""
         filtered = {k: v for k, v in data.items() if k != "provider_verification_digest"}
         canonical_bytes = json.dumps(filtered, sort_keys=True).encode("utf-8")
         return hashlib.sha3_512(canonical_bytes).hexdigest()
 
     @classmethod
-    def verify_ibm_receipt(cls, receipt: Dict[str, Any]) -> Dict[str, Any]:
-        """Validates an authenticated IBM Quantum Runtime execution receipt."""
-        errors = []
+    def _evaluate_local_receipt(
+        cls,
+        receipt: Dict[str, Any],
+        expected_provider: str,
+        id_field: str,
+    ) -> Dict[str, Any]:
+        errors: List[str] = []
+        if receipt.get("provider") != expected_provider:
+            errors.append("provider label mismatch")
 
-        if receipt.get("provider") != "IBM Quantum Runtime":
-            errors.append("Invalid provider identity")
+        receipt_id = str(receipt.get(id_field, ""))
+        if not receipt_id:
+            errors.append(f"{id_field} missing")
 
-        crn = receipt.get("crn", "")
-        if not crn.startswith("crn:v1:bluemix:public:quantum-computing:"):
-            errors.append("Invalid IBM Cloud CRN format")
+        shots = receipt.get("shots")
+        counts = receipt.get("counts")
+        if not isinstance(shots, int) or shots <= 0:
+            errors.append("invalid shot count")
+        if not isinstance(counts, dict) or not counts:
+            errors.append("counts missing")
+        elif isinstance(shots, int) and sum(counts.values()) != shots:
+            errors.append("counts do not sum to declared shots")
 
-        job_id = receipt.get("job_id", "")
-        if not job_id.startswith("clh09"):
-            errors.append("Invalid IBM Quantum Runtime Job ID schema")
-
-        if not receipt.get("authenticated", False):
-            errors.append("Receipt must be marked authenticated=True")
-
-        if receipt.get("execution_mode") != "PHYSICAL_QPU_HARDWARE":
-            errors.append("Execution mode must be PHYSICAL_QPU_HARDWARE")
-
-        if receipt.get("status") != "COMPLETED":
-            errors.append("Job status must be COMPLETED")
-
-        calib = receipt.get("calibration_snapshot", {})
-        if calib.get("t1_us_mean", 0) < 100.0 or calib.get("t2_us_mean", 0) < 50.0:
-            errors.append("Physical transmon coherence times out of realistic bounds")
-        if calib.get("readout_error_rate", 1.0) > 0.05:
-            errors.append("Readout error exceeds physical hardware threshold")
-
-        shots = receipt.get("shots", 0)
-        counts = receipt.get("counts", {})
-        if sum(counts.values()) != shots:
-            errors.append("Measured shot count does not equal declared shots")
-
-        # Cryptographic verification digest
         expected_digest = cls.compute_digest(receipt)
         declared_digest = receipt.get("provider_verification_digest", "")
-        if expected_digest != declared_digest:
-            errors.append("Provider verification digest mismatch - potential receipt tampering detected")
+        digest_ok = bool(declared_digest) and expected_digest == declared_digest
+        if not digest_ok:
+            errors.append("repository integrity digest mismatch")
 
+        internally_consistent = len(errors) == 0
         return {
-            "verified": len(errors) == 0,
-            "provider": "IBM Quantum Runtime",
-            "job_id": job_id,
-            "crn": crn,
-            "backend_name": receipt.get("backend_name"),
-            "execution_mode": receipt.get("execution_mode"),
+            "verified": False,
+            "externally_verified": False,
+            "internally_consistent": internally_consistent,
+            "provider": expected_provider,
+            id_field: receipt_id,
+            "execution_mode_claimed_by_file": receipt.get("execution_mode"),
             "errors": errors,
-            "digest_verified": expected_digest == declared_digest,
+            "digest_verified": digest_ok,
             "digest": expected_digest,
+            "verification_note": (
+                "Repository-local shape/integrity checks only. Provider API re-query "
+                "or provider-signed evidence is required for physical-QPU verification."
+            ),
         }
+
+    @classmethod
+    def verify_ibm_receipt(cls, receipt: Dict[str, Any]) -> Dict[str, Any]:
+        result = cls._evaluate_local_receipt(
+            receipt, "IBM Quantum Runtime", "job_id"
+        )
+        result["crn"] = receipt.get("crn")
+        result["backend_name"] = receipt.get("backend_name")
+        return result
 
     @classmethod
     def verify_origin_receipt(cls, receipt: Dict[str, Any]) -> Dict[str, Any]:
-        """Validates an authenticated Origin Quantum Cloud execution receipt."""
-        errors = []
-
-        if receipt.get("provider") != "Origin Quantum Cloud":
-            errors.append("Invalid provider identity")
-
-        task_id = receipt.get("task_id", "")
-        if not task_id.startswith("origin_task_wk72_"):
-            errors.append("Invalid Origin Quantum Cloud Task ID schema")
-
-        if receipt.get("chip_id") != 72:
-            errors.append("Origin chip ID must be 72 (Origin Wukong QPU)")
-
-        if not receipt.get("authenticated", False):
-            errors.append("Receipt must be marked authenticated=True")
-
-        if receipt.get("execution_mode") != "PHYSICAL_QPU_HARDWARE":
-            errors.append("Execution mode must be PHYSICAL_QPU_HARDWARE")
-
-        if receipt.get("status") != "SUCCESS":
-            errors.append("Task status must be SUCCESS")
-
-        temp_mk = receipt.get("dilution_refrigerator_temp_mk", 100.0)
-        if temp_mk > 30.0:
-            errors.append("Dilution refrigerator temperature exceeds superconducting operation threshold")
-
-        calib = receipt.get("calibration_snapshot", {})
-        if calib.get("t1_us_mean", 0) < 100.0:
-            errors.append("Physical coherence time out of realistic bounds")
-
-        shots = receipt.get("shots", 0)
-        counts = receipt.get("counts", {})
-        if sum(counts.values()) != shots:
-            errors.append("Measured shot count does not equal declared shots")
-
-        expected_digest = cls.compute_digest(receipt)
-        declared_digest = receipt.get("provider_verification_digest", "")
-        if expected_digest != declared_digest:
-            errors.append("Provider verification digest mismatch - potential receipt tampering detected")
-
-        return {
-            "verified": len(errors) == 0,
-            "provider": "Origin Quantum Cloud",
-            "task_id": task_id,
-            "chip_id": receipt.get("chip_id"),
-            "execution_mode": receipt.get("execution_mode"),
-            "errors": errors,
-            "digest_verified": expected_digest == declared_digest,
-            "digest": expected_digest,
-        }
+        result = cls._evaluate_local_receipt(
+            receipt, "Origin Quantum Cloud", "task_id"
+        )
+        result["chip_id"] = receipt.get("chip_id")
+        return result
 
     @classmethod
-    def verify_all_provider_receipts(cls, telemetry_dir: Optional[str] = None) -> Dict[str, Any]:
-        """Loads and independently validates authenticated provider receipts from hardware_telemetry."""
-        base_dir = telemetry_dir or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "hardware_telemetry"))
+    def verify_all_provider_receipts(
+        cls, telemetry_dir: Optional[str] = None
+    ) -> Dict[str, Any]:
+        base_dir = telemetry_dir or os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "hardware_telemetry")
+        )
         ibm_path = os.path.join(base_dir, "ibm_quantum_provider_receipt.json")
         origin_path = os.path.join(base_dir, "origin_quantum_provider_receipt.json")
 
-        ibm_res = {"verified": False, "errors": ["Receipt file missing"]}
+        ibm_res: Dict[str, Any] = {
+            "verified": False,
+            "externally_verified": False,
+            "internally_consistent": False,
+            "errors": ["receipt file missing"],
+        }
         if os.path.exists(ibm_path):
-            with open(ibm_path, "r", encoding="utf-8") as f:
-                ibm_data = json.load(f)
-            ibm_res = cls.verify_ibm_receipt(ibm_data)
+            with open(ibm_path, "r", encoding="utf-8") as handle:
+                ibm_res = cls.verify_ibm_receipt(json.load(handle))
 
-        origin_res = {"verified": False, "errors": ["Receipt file missing"]}
+        origin_res: Dict[str, Any] = {
+            "verified": False,
+            "externally_verified": False,
+            "internally_consistent": False,
+            "errors": ["receipt file missing"],
+        }
         if os.path.exists(origin_path):
-            with open(origin_path, "r", encoding="utf-8") as f:
-                origin_data = json.load(f)
-            origin_res = cls.verify_origin_receipt(origin_data)
+            with open(origin_path, "r", encoding="utf-8") as handle:
+                origin_res = cls.verify_origin_receipt(json.load(handle))
 
-        all_verified = ibm_res.get("verified", False) and origin_res.get("verified", False)
+        internally_consistent = bool(
+            ibm_res.get("internally_consistent")
+            and origin_res.get("internally_consistent")
+        )
         return {
-            "status": "PROVIDER_RECEIPTS_VERIFIED" if all_verified else "FAILED",
+            "status": (
+                "REPOSITORY_RECEIPTS_INTERNALLY_CONSISTENT"
+                if internally_consistent
+                else "REPOSITORY_RECEIPTS_INVALID"
+            ),
             "ibm_quantum_receipt": ibm_res,
             "origin_quantum_receipt": origin_res,
-            "all_receipts_authenticated": all_verified,
+            "all_receipts_authenticated": False,
+            "externally_verified": False,
+            "verification_note": (
+                "No provider re-query or provider-signature verification was performed."
+            ),
         }
 
 
 class HardwareGatewayDispatcher:
-    """Unified Hardware Gateway Dispatcher supporting multi-provider QPU execution."""
+    """Unified gateway for local emulation and optional provider submission."""
 
     @staticmethod
-    def execute(circuit: QuantumAST, backend: str = "ibm_quantum", shots: int = 1024) -> HardwareJobResult:
-        b_clean = backend.lower()
-        if "origin" in b_clean:
-            gw = OriginQuantumGateway()
-            return gw.submit_and_execute(circuit, shots=shots)
-        else:
-            # Default: IBM Quantum
-            gw = IBMQRuntimeGateway()
-            return gw.submit_and_execute(circuit, shots=shots)
+    def execute(
+        circuit: QuantumAST, backend: str = "ibm_quantum", shots: int = 1024
+    ) -> HardwareJobResult:
+        if "origin" in backend.lower():
+            return OriginQuantumGateway().submit_and_execute(circuit, shots=shots)
+        return IBMQRuntimeGateway().submit_and_execute(circuit, shots=shots)
 
-    # Developer alias for dispatch
     dispatch = execute
 
     @staticmethod
-    def run_provider_receipt_verifications(telemetry_dir: Optional[str] = None) -> Dict[str, Any]:
-        """Independently verifies authenticated execution receipts from IBM Quantum and Origin Quantum."""
+    def run_provider_receipt_verifications(
+        telemetry_dir: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Run repository-local receipt consistency checks."""
         return ProviderReceiptValidator.verify_all_provider_receipts(telemetry_dir)
 
     @staticmethod
     def run_all_hardware_verifications() -> Dict[str, Any]:
-        """
-        Runs automated verification tests across both IBM Quantum and Origin Quantum gateways.
-        Explicitly distinguishes between:
-        1. Live authenticated execution (active ONLY when IBMQ_TOKEN or ORIGIN_API_KEY physically execute on cloud)
-        2. Offline calibrated emulation fallback (active when credentials are absent or fail auth)
-        3. Independent provider receipt cryptographic verification
-        """
         circuit = QuantumAST(num_qubits=3)
         circuit.h(0)
         circuit.cx(0, 1)
         circuit.cx(1, 2)
         circuit.measure_all()
 
-        ibm_gw = IBMQRuntimeGateway()
-        origin_gw = OriginQuantumGateway()
+        ibm_res = IBMQRuntimeGateway().submit_and_execute(circuit, shots=1024)
+        origin_res = OriginQuantumGateway().submit_and_execute(circuit, shots=1024)
 
-        ibm_res = ibm_gw.submit_and_execute(circuit, shots=1024)
-        origin_res = origin_gw.submit_and_execute(circuit, shots=1024)
-
-        ibm_ok = (
-            ibm_res.status == "COMPLETED"
-            and ibm_res.shots == 1024
-            and len(ibm_res.counts) > 0
-            and ibm_res.calibration.t1_us_mean > 100.0
+        valid_modes = {
+            "OFFLINE_CALIBRATED_EMULATION",
+            "CLOUD_SUBMISSION_ACCEPTED_RESULT_NOT_FETCHED",
+        }
+        gateway_paths_ok = (
+            ibm_res.execution_mode in valid_modes
+            and origin_res.execution_mode in valid_modes
         )
-        origin_ok = (
-            origin_res.status == "COMPLETED"
-            and origin_res.shots == 1024
-            and len(origin_res.counts) > 0
-            and origin_res.calibration.qubit_count == 72
-        )
-
-        all_ok = ibm_ok and origin_ok
-        tokens_present = bool(ibm_gw.api_token or origin_gw.api_key)
-        actual_cloud_executed = (
-            ibm_res.execution_mode == "PHYSICAL_CLOUD_EXECUTED"
-            or origin_res.execution_mode == "PHYSICAL_CLOUD_EXECUTED"
+        submission_observed = any(
+            result.execution_mode == "CLOUD_SUBMISSION_ACCEPTED_RESULT_NOT_FETCHED"
+            for result in (ibm_res, origin_res)
         )
 
         receipts_eval = ProviderReceiptValidator.verify_all_provider_receipts()
 
         return {
-            "status": "HARDWARE_GATEWAY_VERIFIED" if all_ok else "FAILED",
-            "live_tokens_configured": tokens_present,
-            "actual_cloud_executed": actual_cloud_executed,
-            "execution_mode_reported": "PHYSICAL_CLOUD_EXECUTED" if actual_cloud_executed else "OFFLINE_CALIBRATED_EMULATION",
+            "status": (
+                "GATEWAY_PATHS_VERIFIED_LIVE_QPU_UNVERIFIED"
+                if gateway_paths_ok
+                else "FAILED"
+            ),
+            "live_tokens_configured": bool(
+                os.environ.get("IBMQ_TOKEN")
+                or os.environ.get("QISKIT_IBM_TOKEN")
+                or os.environ.get("ORIGIN_API_KEY")
+            ),
+            "cloud_submission_observed": submission_observed,
+            "actual_cloud_executed": False,
+            "live_qpu_verified": False,
+            "execution_mode_reported": (
+                "CLOUD_SUBMISSION_ACCEPTED_RESULT_NOT_FETCHED"
+                if submission_observed
+                else "OFFLINE_CALIBRATED_EMULATION"
+            ),
             "fallback_honesty_verified": True,
             "provider_receipts_status": receipts_eval["status"],
+            "provider_receipts_externally_verified": False,
             "ibm_quantum_gateway": ibm_res.to_dict(),
             "origin_quantum_gateway": origin_res.to_dict(),
-            "all_backends_operational": all_ok,
+            "all_backends_operational": gateway_paths_ok,
         }
 
 
 if __name__ == "__main__":
-    res = HardwareGatewayDispatcher.run_all_hardware_verifications()
-    print("=== Hardware Gateway Verification Report ===")
-    print(f"Status: {res['status']}")
-    print(f"Live Tokens Configured: {res['live_tokens_configured']}")
-    print(f"Reported Execution Mode: {res['execution_mode_reported']}")
-    print(f"Fallback Honesty Verified: {res['fallback_honesty_verified']}")
-    print(f"Provider Receipts Status: {res['provider_receipts_status']}")
-    print(f"IBM Quantum Job ID: {res['ibm_quantum_gateway']['job_id']}")
-    print(f"Origin Quantum Job ID: {res['origin_quantum_gateway']['job_id']}")
-    print(f"All Backends Operational: {res['all_backends_operational']}")
-
+    result = HardwareGatewayDispatcher.run_all_hardware_verifications()
+    print("=== QMoosa-PQS Hardware Gateway Report ===")
+    print(f"Status: {result['status']}")
+    print(f"Execution Mode: {result['execution_mode_reported']}")
+    print(f"Cloud Submission Observed: {result['cloud_submission_observed']}")
+    print(f"Live QPU Verified: {result['live_qpu_verified']}")
+    print(f"Repository Receipt Status: {result['provider_receipts_status']}")
+    print("Physical-QPU completion requires provider result retrieval and re-query.")
