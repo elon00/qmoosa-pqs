@@ -122,10 +122,18 @@ class TestHardwareGateway(unittest.TestCase):
             receipt = json.load(f)
 
         eval_res = ProviderReceiptValidator.verify_origin_receipt(receipt)
-        self.assertTrue(eval_res["verified"], f"Validation failed: {eval_res.get('errors')}")
+        self.assertFalse(eval_res["verified"])
+        self.assertFalse(eval_res["externally_verified"])
+        self.assertTrue(
+            eval_res["internally_consistent"],
+            f"Consistency failed: {eval_res.get('errors')}",
+        )
         self.assertTrue(eval_res["digest_verified"])
         self.assertEqual(eval_res["chip_id"], 72)
-        self.assertEqual(eval_res["execution_mode"], "PHYSICAL_QPU_HARDWARE")
+        self.assertEqual(
+            eval_res["execution_mode_claimed_by_file"],
+            "PHYSICAL_QPU_HARDWARE",
+        )
 
     def test_provider_receipt_tamper_rejection(self):
         """Validates that altering any field in provider receipts invalidates the cryptographic digest."""
