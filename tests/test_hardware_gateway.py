@@ -1,6 +1,6 @@
 """
-Unit tests for Quantum Hardware Gateway (IBM Quantum Runtime & Origin Quantum).
-Validates demonstrated live backend execution, job IDs, calibration metrics, and physical transmon telemetry.
+Unit tests for QMoosa-PQS provider submission adapters and calibrated-emulation fallback.
+These tests do not claim completed physical-QPU execution without provider result retrieval.
 """
 
 import unittest
@@ -32,14 +32,14 @@ class TestHardwareGateway(unittest.TestCase):
         self.circuit.h(0).cx(0, 1).cx(1, 2).measure_all()
 
     def test_ibm_quantum_heron_execution(self):
-        """Validates IBM Quantum Heron 133-qubit execution client."""
+        """Validates the IBM adapter's fail-closed offline-emulation path."""
         gw = IBMQRuntimeGateway()
         res = gw.submit_and_execute(self.circuit, shots=1024)
 
         self.assertEqual(res.status, "COMPLETED")
-        self.assertEqual(res.backend_provider, "IBM Quantum")
+        self.assertIn("IBM Quantum", res.backend_provider)
         self.assertIn("heron", res.backend_name)
-        self.assertTrue(res.job_id.startswith("ibmq_job_heron_"))
+        self.assertTrue(res.job_id.startswith("local_ibm_submission_"))
         self.assertEqual(res.shots, 1024)
         self.assertGreater(len(res.counts), 0)
 
@@ -51,14 +51,14 @@ class TestHardwareGateway(unittest.TestCase):
         self.assertLess(calib.two_qubit_error_rate, 0.01)
 
     def test_origin_quantum_wukong_execution(self):
-        """Validates Origin Quantum Wukong 72-qubit execution client."""
+        """Validates the Origin adapter's fail-closed offline-emulation path."""
         gw = OriginQuantumGateway()
         res = gw.submit_and_execute(self.circuit, shots=1024)
 
         self.assertEqual(res.status, "COMPLETED")
-        self.assertEqual(res.backend_provider, "Origin Quantum")
+        self.assertIn("Origin Quantum", res.backend_provider)
         self.assertIn("wukong", res.backend_name)
-        self.assertTrue(res.job_id.startswith("origin_job_wk72_"))
+        self.assertTrue(res.job_id.startswith("local_origin_submission_"))
         self.assertEqual(res.shots, 1024)
         self.assertGreater(len(res.counts), 0)
 
@@ -70,11 +70,11 @@ class TestHardwareGateway(unittest.TestCase):
     def test_hardware_dispatcher_multi_backend(self):
         """Validates dispatch routing to IBM Quantum and Origin Quantum."""
         res_ibm = HardwareGatewayDispatcher.execute(self.circuit, backend="ibm_quantum", shots=512)
-        self.assertEqual(res_ibm.backend_provider, "IBM Quantum")
+        self.assertIn("IBM Quantum", res_ibm.backend_provider)
         self.assertEqual(res_ibm.shots, 512)
 
         res_origin = HardwareGatewayDispatcher.execute(self.circuit, backend="origin_quantum", shots=512)
-        self.assertEqual(res_origin.backend_provider, "Origin Quantum")
+        self.assertIn("Origin Quantum", res_origin.backend_provider)
         self.assertEqual(res_origin.shots, 512)
 
     def test_unauthenticated_gateway_fallback_honesty(self):
@@ -94,7 +94,7 @@ class TestHardwareGateway(unittest.TestCase):
         self.assertEqual(origin_res.execution_mode, "OFFLINE_CALIBRATED_EMULATION")
 
     def test_ibm_authenticated_provider_receipt_verification(self):
-        """Validates authentic signed execution receipt from IBM Quantum Runtime."""
+        """Validates local integrity of the repository-supplied IBM receipt fixture."""
         telemetry_dir = os.path.abspath(os.path.join(PROJECT_ROOT, "hardware_telemetry"))
         ibm_path = os.path.join(telemetry_dir, "ibm_quantum_provider_receipt.json")
         self.assertTrue(os.path.exists(ibm_path))
@@ -104,13 +104,15 @@ class TestHardwareGateway(unittest.TestCase):
             receipt = json.load(f)
 
         eval_res = ProviderReceiptValidator.verify_ibm_receipt(receipt)
-        self.assertTrue(eval_res["verified"], f"Validation failed: {eval_res.get('errors')}")
+        self.assertFalse(eval_res["verified"])
+        self.assertFalse(eval_res["externally_verified"])
+        self.assertTrue(eval_res["internally_consistent"], f"Consistency failed: {eval_res.get('errors')}")
         self.assertTrue(eval_res["digest_verified"])
         self.assertEqual(eval_res["job_id"], "clh09qm86mfc008f1h20")
-        self.assertEqual(eval_res["execution_mode"], "PHYSICAL_QPU_HARDWARE")
+        self.assertEqual(eval_res["execution_mode_claimed_by_file"], "PHYSICAL_QPU_HARDWARE")
 
     def test_origin_authenticated_provider_receipt_verification(self):
-        """Validates authentic signed execution receipt from Origin Quantum Cloud."""
+        """Validates local integrity of the repository-supplied Origin receipt fixture."""
         telemetry_dir = os.path.abspath(os.path.join(PROJECT_ROOT, "hardware_telemetry"))
         origin_path = os.path.join(telemetry_dir, "origin_quantum_provider_receipt.json")
         self.assertTrue(os.path.exists(origin_path))
@@ -140,16 +142,19 @@ class TestHardwareGateway(unittest.TestCase):
 
         eval_res = ProviderReceiptValidator.verify_ibm_receipt(tampered)
         self.assertFalse(eval_res["verified"])
+        self.assertFalse(eval_res["internally_consistent"])
         self.assertFalse(eval_res["digest_verified"])
         self.assertTrue(any("mismatch" in e for e in eval_res["errors"]))
 
     def test_hardware_verifications_bundle(self):
-        """Validates overall hardware gateway automated verification bundle."""
+        """Validates gateway paths without claiming live QPU completion."""
         summary = HardwareGatewayDispatcher.run_all_hardware_verifications()
-        self.assertEqual(summary["status"], "HARDWARE_GATEWAY_VERIFIED")
+        self.assertEqual(summary["status"], "GATEWAY_PATHS_VERIFIED_LIVE_QPU_UNVERIFIED")
         self.assertTrue(summary["fallback_honesty_verified"])
-        self.assertEqual(summary["provider_receipts_status"], "PROVIDER_RECEIPTS_VERIFIED")
+        self.assertEqual(summary["provider_receipts_status"], "REPOSITORY_RECEIPTS_INTERNALLY_CONSISTENT")
         self.assertTrue(summary["all_backends_operational"])
+        self.assertFalse(summary["live_qpu_verified"])
+        self.assertFalse(summary["provider_receipts_externally_verified"])
 
     def test_origin_lifecycle_adapter_fail_closed(self):
         """Validates fail-closed behavior of OriginCloudLifecycleAdapter."""
