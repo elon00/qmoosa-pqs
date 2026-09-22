@@ -1,8 +1,8 @@
 """
-Master Reality Verification Runner for QMoosa-PQS.
+Repository verification runner for QMoosa-PQS.
 Executes all unit test suites, NIST FIPS 203/204 KATs, Conway Cellular Routing verifications,
 Quantum Execution Engine simulation proofs, Web 4.0 Attestation receipts, and Autonomous Agent
-End-to-End syntheses under the Zero-Hallucination 5-Tier Truth Protocol.
+end-to-end synthesis regression checks. Passing is repository evidence, not external certification.
 """
 
 import unittest
@@ -25,9 +25,9 @@ from core.nist_kat_data import ExternalNISTKATValidator
 
 def run_master_test_suite():
     print("==================================================================")
-    print("  QMoosa-PQS Master Reality Verification & Test Suite")
+    print("  QMoosa-PQS Repository Verification & Test Suite")
     print("  Web 4.0 Autonomous Quantum & Cellular Compilation Platform")
-    print("  Zero-Hallucination Machine Evidence Protocol")
+    print("  Internal regression evidence; live QPU execution requires provider verification")
     print("==================================================================")
 
     start_time = time.time()
@@ -100,23 +100,24 @@ def run_master_test_suite():
             agent_success = False
 
     # Step 7: Live Quantum Hardware Gateway Execution & Fallback Honesty Proofs
-    print("\n--- Step 7: Running Live Quantum Hardware Gateway Execution & Fallback Honesty Proofs ---")
+    print("\n--- Step 7: Running Provider Gateway & Fallback Honesty Checks ---")
     hw_res = HardwareGatewayDispatcher.run_all_hardware_verifications()
-    hw_success = (hw_res["status"] == "HARDWARE_GATEWAY_VERIFIED")
+    hw_success = (hw_res["status"] == "GATEWAY_PATHS_VERIFIED_LIVE_QPU_UNVERIFIED")
     print(f"  [HARDWARE] Status: {hw_res['status']}")
     print(f"             Reported Execution Mode: {hw_res['execution_mode_reported']}")
     print(f"             Fallback Honesty Verified: {hw_res['fallback_honesty_verified']}")
     print(f"             IBM Quantum (Heron 133Q): Job={hw_res['ibm_quantum_gateway']['job_id']} | Mode={hw_res['ibm_quantum_gateway']['execution_mode']}")
     print(f"             Origin Quantum (Wukong 72Q): Job={hw_res['origin_quantum_gateway']['job_id']} | Mode={hw_res['origin_quantum_gateway']['execution_mode']}")
-    print(f"             All Backends Operational: {hw_res['all_backends_operational']}")
+    print(f"             Gateway Paths Operational: {hw_res['all_backends_operational']}")
+    print(f"             Live QPU Verified: {hw_res['live_qpu_verified']}")
 
     # Step 8: Independent IBM Quantum & Origin Quantum Provider Hardware Attestation
-    print("\n--- Step 8: Running Independent IBM Quantum & Origin Quantum Provider Receipt Proofs ---")
+    print("\n--- Step 8: Running Repository Receipt Integrity Checks ---")
     provider_receipts = HardwareGatewayDispatcher.run_provider_receipt_verifications()
-    receipts_success = (provider_receipts["status"] == "PROVIDER_RECEIPTS_VERIFIED")
+    receipts_success = (provider_receipts["status"] == "REPOSITORY_RECEIPTS_INTERNALLY_CONSISTENT")
     print(f"  [RECEIPTS] Status: {provider_receipts['status']}")
-    print(f"             IBM Quantum (Heron 133Q): Verified={provider_receipts['ibm_quantum_receipt']['verified']} | Job={provider_receipts['ibm_quantum_receipt']['job_id']} | Digest={provider_receipts['ibm_quantum_receipt']['digest'][:16]}...")
-    print(f"             Origin Quantum (Wukong 72Q): Verified={provider_receipts['origin_quantum_receipt']['verified']} | Task={provider_receipts['origin_quantum_receipt']['task_id']} | Digest={provider_receipts['origin_quantum_receipt']['digest'][:16]}...")
+    print(f"             IBM Quantum (Heron 133Q): InternallyConsistent={provider_receipts['ibm_quantum_receipt']['internally_consistent']} | Job={provider_receipts['ibm_quantum_receipt']['job_id']} | Digest={provider_receipts['ibm_quantum_receipt']['digest'][:16]}...")
+    print(f"             Origin Quantum (Wukong 72Q): InternallyConsistent={provider_receipts['origin_quantum_receipt']['internally_consistent']} | Task={provider_receipts['origin_quantum_receipt']['task_id']} | Digest={provider_receipts['origin_quantum_receipt']['digest'][:16]}...")
 
     # Step 9: External NIST CSRC PQC Benchmark KAT Verifications
     print("\n--- Step 9: Running External NIST CSRC PQC Benchmark KAT Proofs ---")
@@ -141,7 +142,7 @@ def run_master_test_suite():
     print(f"  Web 4.0 Attestation Status    : {'PASS' if web4_success else 'FAIL'}")
     print(f"  Agent E2E Status              : {'PASS' if agent_success else 'FAIL'}")
     print(f"  Hardware Gateway Status       : {'PASS' if hw_success else 'FAIL'}")
-    print(f"  Provider Receipts Status      : {'PASS' if receipts_success else 'FAIL'}")
+    print(f"  Receipt Integrity Status      : {'PASS' if receipts_success else 'FAIL'}")
     print(f"  External NIST KAT Status      : {'PASS' if ext_kat_success else 'FAIL'}")
     print(f"  Execution Time                : {elapsed:.2f} seconds")
 
@@ -156,7 +157,7 @@ def run_master_test_suite():
         and receipts_success
         and ext_kat_success
     ):
-        print("  OVERALL VERIFICATION STATUS: VERIFIED_PASS")
+        print("  OVERALL REPOSITORY CHECK STATUS: PASS (LIVE QPU NOT VERIFIED BY THIS SUITE)")
         print("==================================================================")
         return 0
     else:
