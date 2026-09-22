@@ -24,8 +24,6 @@ from datetime import datetime, timezone
 def _get_ssl_context() -> ssl.SSLContext:
     """Creates a TLS context resilient across international quantum cloud endpoints."""
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
     return ctx
 
 
@@ -217,8 +215,6 @@ class OriginCloudLifecycleAdapter:
         """Conducts an independent HTTP network query to verify job state and identity."""
         endpoint = f"{self.api_base}/task/detail"
         ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
 
         headers = {
             "ApiKey": self.api_key,
@@ -417,8 +413,6 @@ class IBMQCloudLifecycleAdapter:
         """Conducts an independent HTTP network query to verify job state and identity."""
         endpoint = f"{self.api_base}/jobs/{job_id}"
         ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
 
         headers = {
             "Authorization": f"Bearer {self.api_token}",
@@ -610,8 +604,6 @@ class IonQCloudLifecycleAdapter:
         """Independent HTTP query verifying job completion and authenticity directly on IonQ."""
         endpoint = f"{self.api_base}/jobs/{job_id}"
         ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
         headers = self._headers()
         req = urllib.request.Request(endpoint, headers=headers, method="GET")
 

@@ -29,6 +29,22 @@ jobs:
       with:
         python-version: "3.11"
 
+    - name: Enforce provider TLS verification
+      run: |
+        python - <<'PY'
+        from pathlib import Path
+        forbidden = ("ssl.CERT_NONE", "check_hostname = False", "_create_unverified_context")
+        offenders = []
+        for path in Path(".").rglob("*.py"):
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            for token in forbidden:
+                if token in text:
+                    offenders.append(f"{path}: {token}")
+        if offenders:
+            raise SystemExit("Unverified TLS is forbidden:\n" + "\n".join(offenders))
+        print("TLS policy check passed")
+        PY
+
     - name: Run QMoosa-PQS Master Test Runner
       run: |
         python tests/run_all_tests.py
