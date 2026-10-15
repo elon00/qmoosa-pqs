@@ -1,8 +1,8 @@
 {
   "reality_audit_version": "1.0.0",
-  "timestamp": "2026-10-15T10:42:23Z",
+  "timestamp": "2026-10-15T11:15:35Z",
   "overall_status": "REALITY_GATES_PASSED_HONEST",
-  "elapsed_seconds": 23.49,
+  "elapsed_seconds": 28.05,
   "gates_evaluated": 10,
   "status_summary": {
     "PASS": 9,
@@ -79,7 +79,7 @@
       "status": "PASS",
       "evidence": "Candidate rule evaluated in sandbox: UnitaryVerified=True, Status=PROMOTED_FOR_PR_REVIEW.",
       "metrics": {
-        "experiment_id": "exp_1792060942_gate_rsi_01",
+        "experiment_id": "exp_1792062934_gate_rsi_01",
         "gate_reduction_pct": 10.53,
         "unitary_verified": true
       }
@@ -114,5 +114,5 @@
       }
     }
   ],
-  "evidence_sha256": "af6e1b166fd9d972278d3448286895c7620e3516ff81691c1798dbfff41f9852"
+  "evidence_sha256": "9aa043e0de02f4177eb556649bcaff5559190e99443ed7b06829da599edc4056"
 }

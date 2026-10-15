@@ -1,0 +1,33 @@
+{
+  "experiment_id": "exp_1792062895_rsi_test_001",
+  "timestamp": "2026-10-15T11:14:55Z",
+  "hypothesis": "H-Z-H gate sequences on identical qubits collapse to X",
+  "candidate_rule": {
+    "rule_id": "RSI-TEST-001",
+    "pattern": "H * Z * H",
+    "replacement": "X",
+    "gate_saving": 2,
+    "verified": true
+  },
+  "baseline_metrics": {
+    "total_gates": 19,
+    "total_depth": 11,
+    "two_qubit_gates": 3,
+    "circuits_evaluated": 3
+  },
+  "candidate_metrics": {
+    "total_gates": 17,
+    "total_depth": 9,
+    "two_qubit_gates": 3,
+    "circuits_evaluated": 3,
+    "gate_reduction_pct": 10.53,
+    "depth_reduction_pct": 18.18,
+    "two_qubit_reduction_pct": 0.0
+  },
+  "unitary_equivalence_verified": true,
+  "held_out_verified": true,
+  "security_gates_passed": true,
+  "status": "PROMOTED_FOR_PR_REVIEW",
+  "decision_rationale": "Candidate rule RSI-TEST-001 achieved 10.53% gate reduction and 18.18% depth reduction with 100% formal unitary equivalence verified across held-out benchmark suite.",
+  "evidence_sha256": "0d02292d1d3fbbcad4dbe0be4cf55417b2c3fe33022f60984ebf4ca88c88a3e9"
+}
