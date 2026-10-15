@@ -7,7 +7,7 @@ and integrates REA Reverse Engineering, Raven AI RSI, and Surface Code Fault-Tol
 
 import re
 import math
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from core.ast_circuit import QuantumAST, GateType
 from core.constraint_solver import ConstraintSolver
 from core.transpiler import QiskitTranspiler, OpenQASMTranspiler, OriginPilotTranspiler, IonQJSONTranspiler, RigettiQuilTranspiler
