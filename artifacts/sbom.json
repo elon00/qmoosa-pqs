@@ -1,0 +1,62 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:f04a96e61b881ba9e837da49ac5d1b00",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-15T10:40:57Z",
+    "tools": [
+      {
+        "vendor": "QMoosa-PQS",
+        "name": "Security-Auditor",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "name": "qmoosa-pqs",
+      "version": "1.0.0",
+      "type": "application",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "qmoosa-pqs-core",
+      "version": "1.0.0",
+      "type": "application",
+      "license": "MIT",
+      "purl": "pkg:github/elon00/qmoosa-pqs",
+      "description": "Quantum compilation, cellular automaton, simulation, provider gateway and post-quantum cryptography research platform"
+    },
+    {
+      "name": "classiq-adapter",
+      "version": "optional-v0.40.0",
+      "type": "library",
+      "license": "Proprietary / Commercial SDK Interface (Optional)",
+      "purl": "pkg:pypi/classiq",
+      "scope": "optional"
+    },
+    {
+      "name": "rea-agents",
+      "version": "latest",
+      "type": "tool",
+      "license": "MIT",
+      "purl": "pkg:npm/rea-agents",
+      "scope": "optional_mcp"
+    },
+    {
+      "name": "amazon-braket-sdk",
+      "version": ">=1.35.1",
+      "type": "library",
+      "license": "Apache-2.0",
+      "purl": "pkg:pypi/amazon-braket-sdk",
+      "scope": "optional"
+    }
+  ]
+}

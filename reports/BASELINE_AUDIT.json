@@ -1,0 +1,93 @@
+{
+  "audit_version": "1.0.0",
+  "audit_timestamp": "2026-10-15T10:31:00Z",
+  "target_repository": "https://github.com/elon00/qmoosa-pqs.git",
+  "base_commit": "b154f6010dabf411ba63900990cfd61d27a79ff0",
+  "integration_branch": "feat/classiq-rea-rsi-superplatform",
+  "license": "MIT",
+  "python_runtime": "3.14.6",
+  "secrets_scan": {
+    "status": "CLEAN",
+    "findings": 0,
+    "credentials_policy": "Strict environment variables only; zero hardcoded secrets"
+  },
+  "dependencies": {
+    "core_mandatory": "Zero external dependencies (Python 3.11+ standard library)",
+    "optional_quantum": [
+      "qiskit>=1.0.0",
+      "qiskit-aer>=0.14.0",
+      "z3-solver>=4.12.0",
+      "classiq>=0.40.0",
+      "amazon-braket-sdk>=1.35.1"
+    ],
+    "optional_rea": "npx rea-agents@latest"
+  },
+  "observed_capabilities": [
+    {
+      "component": "Quantum AST & Transpilers",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/ast_circuit.py, core/transpiler.py (Qiskit, OpenQASM, Origin Pilot, IonQ, Rigetti)"
+    },
+    {
+      "component": "Constraint Solver & Optimizer",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/constraint_solver.py (Inverse gate cancellation, continuous rotation merging, linear & cellular routing)"
+    },
+    {
+      "component": "Conway Cellular Automaton",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/conway_engine.py (Blinker oscillator, glider preservation, 2D lattice grid router)"
+    },
+    {
+      "component": "Quantum Execution Simulation",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/execution_engine.py (Exact 2^n statevector simulation and shot-based multinomial sampling)"
+    },
+    {
+      "component": "Post-Quantum Cryptography (PQC)",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/pqc_crypto.py, core/pqc_bridge.py (NIST FIPS 203 ML-KEM-768 and FIPS 204 ML-DSA-65 wire lengths, KATs, tamper resistance)"
+    },
+    {
+      "component": "Provider Gateway & Fallback Honesty",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/hardware_gateway.py, core/qpu_adapter.py (Fail-closed emulation when unauthenticated)"
+    },
+    {
+      "component": "Web4 Attestation Receipts",
+      "status": "VERIFIED_PASS",
+      "evidence": "core/web4_bridge.py (ML-DSA-65 signed receipts, SHA3-512 block chaining)"
+    }
+  ],
+  "missing_capabilities_prior_to_mission": [
+    {
+      "capability": "Classiq SDK & Qmod Integration",
+      "status": "IN_PROGRESS",
+      "blocker": "Required typed Quantum Intermediate Representation and optional Classiq adapter"
+    },
+    {
+      "capability": "REA (morluto/rea) Subprocess & MCP Adapter",
+      "status": "IN_PROGRESS",
+      "blocker": "Required authorized investigation boundaries, timeout sandboxing, and evidence extraction"
+    },
+    {
+      "capability": "Raven-style Autonomous RSI Pipeline",
+      "status": "IN_PROGRESS",
+      "blocker": "Required hypothesis generation, worktree sandboxing, unitary equivalence gating, and promotion rubric"
+    },
+    {
+      "capability": "Fault-Tolerant Surface Code & Lattice Surgery",
+      "status": "IN_PROGRESS",
+      "blocker": "Required surface code distance d, physical qubit count, and magic state factory volume estimation"
+    },
+    {
+      "capability": "Multi-Agent Swarm Orchestrator",
+      "status": "IN_PROGRESS",
+      "blocker": "Required 7-agent cooperative execution workflow"
+    }
+  ],
+  "physical_hardware_status": {
+    "live_qpu_execution": "NOT_CONFIGURED",
+    "evidence_rule": "Requires provider credentials, provider terminal task ID, verified QPU result fetch, and independent out-of-band re-query. Unauthenticated runs report OFFLINE_CALIBRATED_EMULATION."
+  }
+}

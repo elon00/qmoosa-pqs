@@ -150,15 +150,27 @@ class QuantumAST:
         self.gates.append(GateNode(GateType.T, targets=[qubit]))
         return self
 
-    def rx(self, theta: float, qubit: int) -> "QuantumAST":
+    def rx(self, arg1: Any, arg2: Any) -> "QuantumAST":
+        if isinstance(arg1, int) and not isinstance(arg2, int):
+            qubit, theta = arg1, float(arg2)
+        else:
+            theta, qubit = float(arg1), int(arg2)
         self.gates.append(GateNode(GateType.RX, targets=[qubit], params=[theta], label=f"Rx({theta:.2f})"))
         return self
 
-    def ry(self, theta: float, qubit: int) -> "QuantumAST":
+    def ry(self, arg1: Any, arg2: Any) -> "QuantumAST":
+        if isinstance(arg1, int) and not isinstance(arg2, int):
+            qubit, theta = arg1, float(arg2)
+        else:
+            theta, qubit = float(arg1), int(arg2)
         self.gates.append(GateNode(GateType.RY, targets=[qubit], params=[theta], label=f"Ry({theta:.2f})"))
         return self
 
-    def rz(self, phi: float, qubit: int) -> "QuantumAST":
+    def rz(self, arg1: Any, arg2: Any) -> "QuantumAST":
+        if isinstance(arg1, int) and not isinstance(arg2, int):
+            qubit, phi = arg1, float(arg2)
+        else:
+            phi, qubit = float(arg1), int(arg2)
         self.gates.append(GateNode(GateType.RZ, targets=[qubit], params=[phi], label=f"Rz({phi:.2f})"))
         return self
 

@@ -1,0 +1,33 @@
+{
+  "experiment_id": "exp_1792061068_rsi_report_002",
+  "timestamp": "2026-10-15T10:44:28Z",
+  "hypothesis": "No-op candidate test for rollback verification",
+  "candidate_rule": {
+    "rule_id": "RSI-REPORT-002",
+    "pattern": "DUMMY_NOOP",
+    "replacement": "NONE",
+    "gate_saving": 0,
+    "verified": true
+  },
+  "baseline_metrics": {
+    "total_gates": 19,
+    "total_depth": 11,
+    "two_qubit_gates": 3,
+    "circuits_evaluated": 3
+  },
+  "candidate_metrics": {
+    "total_gates": 19,
+    "total_depth": 11,
+    "two_qubit_gates": 3,
+    "circuits_evaluated": 3,
+    "gate_reduction_pct": 0.0,
+    "depth_reduction_pct": 0.0,
+    "two_qubit_reduction_pct": 0.0
+  },
+  "unitary_equivalence_verified": true,
+  "held_out_verified": true,
+  "security_gates_passed": true,
+  "status": "REJECTED_WITH_ROLLBACK",
+  "decision_rationale": "Candidate rule RSI-REPORT-002 failed promotion criteria: UnitaryVerified=True, GateReduction=0.0%, DepthReduction=0.0%. Rolled back automatically.",
+  "evidence_sha256": "0aa079c17113e7c9c90aa6e1211e046623adc4c1e7abb0f58e784f263a100efa"
+}
