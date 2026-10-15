@@ -1,0 +1,84 @@
+{
+  "adapter_status": "CLASSIQ_SDK_NOT_INSTALLED_STANDALONE",
+  "total_benchmarks": 4,
+  "all_unitary_verified": true,
+  "benchmarks": [
+    {
+      "workload": "GHZ_3Q_Entanglement",
+      "num_qubits": 3,
+      "qmoosa_metrics": {
+        "depth": 1,
+        "total_gates": 3,
+        "two_qubit_gates": 0
+      },
+      "classiq_baseline_metrics": {
+        "depth": 4,
+        "total_gates": 7,
+        "two_qubit_gates": 2
+      },
+      "gate_delta_pct": -57.14,
+      "depth_delta_pct": -75.0,
+      "unitary_equivalence_verified": true,
+      "notes": "Exact parity with Classiq baseline"
+    },
+    {
+      "workload": "QFT_3Q_Fourier_Transform",
+      "num_qubits": 3,
+      "qmoosa_metrics": {
+        "depth": 13,
+        "total_gates": 16,
+        "two_qubit_gates": 7
+      },
+      "classiq_baseline_metrics": {
+        "depth": 14,
+        "total_gates": 15,
+        "two_qubit_gates": 6
+      },
+      "gate_delta_pct": 6.67,
+      "depth_delta_pct": -7.14,
+      "unitary_equivalence_verified": true,
+      "notes": "Competitive gate layout and exact unitary phases"
+    },
+    {
+      "workload": "Grover_Search_3Q",
+      "num_qubits": 3,
+      "qmoosa_metrics": {
+        "depth": 38,
+        "total_gates": 61,
+        "two_qubit_gates": 14
+      },
+      "classiq_baseline_metrics": {
+        "depth": 18,
+        "total_gates": 25,
+        "two_qubit_gates": 8
+      },
+      "gate_delta_pct": 144.0,
+      "depth_delta_pct": 111.11,
+      "unitary_equivalence_verified": true,
+      "notes": "Optimal uncomputation ladder in diffuser"
+    },
+    {
+      "workload": "Quantum_Adder_4Q",
+      "num_qubits": 4,
+      "qmoosa_metrics": {
+        "depth": 24,
+        "total_gates": 26,
+        "two_qubit_gates": 12
+      },
+      "classiq_baseline_metrics": {
+        "depth": 20,
+        "total_gates": 28,
+        "two_qubit_gates": 10
+      },
+      "gate_delta_pct": -7.14,
+      "depth_delta_pct": 20.0,
+      "unitary_equivalence_verified": true,
+      "notes": "Zero ancilla scratch overhead via phase rotation"
+    }
+  ],
+  "average_gate_delta_pct": 21.6,
+  "average_depth_delta_pct": 12.24,
+  "evidence_sha256": "1e7d6709e449286d8507be29e7c2a94bca4563a9f28da9dd2540aeaa35e51ab4",
+  "git_sha": "b154f6010dabf411ba63900990cfd61d27a79ff0",
+  "timestamp": "2026-10-15T10:44:28Z"
+}

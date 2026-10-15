@@ -1,0 +1,33 @@
+{
+  "experiment_id": "exp_1792062895_rsi_test_noop",
+  "timestamp": "2026-10-15T11:14:55Z",
+  "hypothesis": "No-op rule should not improve metrics",
+  "candidate_rule": {
+    "rule_id": "RSI-TEST-NOOP",
+    "pattern": "NON_EXISTENT_PATTERN",
+    "replacement": "NON_EXISTENT",
+    "gate_saving": 0,
+    "verified": true
+  },
+  "baseline_metrics": {
+    "total_gates": 19,
+    "total_depth": 11,
+    "two_qubit_gates": 3,
+    "circuits_evaluated": 3
+  },
+  "candidate_metrics": {
+    "total_gates": 19,
+    "total_depth": 11,
+    "two_qubit_gates": 3,
+    "circuits_evaluated": 3,
+    "gate_reduction_pct": 0.0,
+    "depth_reduction_pct": 0.0,
+    "two_qubit_reduction_pct": 0.0
+  },
+  "unitary_equivalence_verified": true,
+  "held_out_verified": true,
+  "security_gates_passed": true,
+  "status": "REJECTED_WITH_ROLLBACK",
+  "decision_rationale": "Candidate rule RSI-TEST-NOOP failed promotion criteria: UnitaryVerified=True, GateReduction=0.0%, DepthReduction=0.0%. Rolled back automatically.",
+  "evidence_sha256": "7a0c9d94342b179ceee8aa35546e4c84faea85dff70a3fe0d29d7489e2258bef"
+}

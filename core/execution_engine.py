@@ -166,6 +166,12 @@ class QuantumExecutionEngine:
         """
         Executes full statevector simulation of circuit starting from |0...0>.
         """
+        return self.simulate_statevector(circuit)
+
+    def simulate_statevector(self, circuit: QuantumAST) -> List[complex]:
+        """
+        Executes full statevector simulation of circuit starting from |0...0>.
+        """
         n = circuit.num_qubits
         if n > self.max_qubits:
             raise ValueError(f"Circuit qubit count {n} exceeds simulation limit {self.max_qubits}")

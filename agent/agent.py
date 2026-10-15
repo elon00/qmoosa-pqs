@@ -1,25 +1,30 @@
 """
 Autonomous Quantum Agent Orchestrator for QMoosa-PQS.
 Parses natural language prompts (English), synthesizes AST circuits,
-runs constraint optimization passes, and transpiles to Qiskit & Origin Pilot.
+runs constraint optimization passes, transpiles to multi-hardware targets,
+and integrates REA Reverse Engineering, Raven AI RSI, and Surface Code Fault-Tolerance.
 """
 
 import re
 import math
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from core.ast_circuit import QuantumAST, GateType
 from core.constraint_solver import ConstraintSolver
-from core.transpiler import QiskitTranspiler, OpenQASMTranspiler, OriginPilotTranspiler
+from core.transpiler import QiskitTranspiler, OpenQASMTranspiler, OriginPilotTranspiler, IonQJSONTranspiler, RigettiQuilTranspiler
 from core.pqc_bridge import PQCBridge
 from core.execution_engine import QuantumExecutionEngine
 from core.conway_engine import CellularGridRouter
 from core.web4_bridge import Web4ReceiptManager
 from core.hardware_gateway import HardwareGatewayDispatcher, HardwareJobResult
+from core.qmod_synthesis import QmodModel, QmodSynthesisEngine, SynthesisConstraints
+from core.rea_engine import ReverseEngineerQuantumEngine, READecompilationReport
+from core.raven_rsi import RavenRSIEngine
+from core.fault_tolerant import FaultTolerantResourceEstimator, FaultTolerantResourceReport
 from .telemetry import TelemetryRecorder, ExecutionTelemetry
 
 
 class QuantumAgent:
-    """Autonomous Web 4.0 agent orchestrating AI, Conway cellular computation, and live quantum compilation."""
+    """Autonomous Web 4.0 agent orchestrating AI, Conway cellular computation, REA, Raven RSI, and live quantum compilation."""
 
     def __init__(self, target_topology: str = "all_to_all", target_backend: str = "ibm_quantum"):
         self.target_topology = target_topology
@@ -28,6 +33,11 @@ class QuantumAgent:
         self.engine = QuantumExecutionEngine()
         self.web4_manager = Web4ReceiptManager()
         self.recorder = TelemetryRecorder()
+        
+        # Next-Gen Engines (Surpassing Classiq)
+        self.qmod_engine = QmodSynthesisEngine()
+        self.rea_engine = ReverseEngineerQuantumEngine()
+        self.rsi_engine = RavenRSIEngine()
 
     def parse_qubit_count(self, prompt: str, default: int = 3) -> int:
         """Extracts desired number of qubits from prompt text."""
@@ -38,7 +48,7 @@ class QuantumAgent:
         return default
 
     def synthesize(self, prompt: str) -> Dict[str, Any]:
-        """Main autonomous Web 4.0 synthesis loop with live hardware backend execution."""
+        """Main autonomous Web 4.0 synthesis loop with live hardware backend execution and RSI/REA telemetry."""
         p_lower = prompt.lower()
         num_qubits = self.parse_qubit_count(prompt)
 
@@ -55,6 +65,11 @@ class QuantumAgent:
         # If user explicitly requested Conway 2D topology, adopt the cellular-routed AST
         final_ast = conway_ast if self.target_topology in ("conway_2d", "cellular_grid", "2d_grid") else optimized_ast
 
+        # Stage 3b: Raven AI Recursive Self-Improvement (RSI) Pass
+        rsi_optimized_ast, rsi_passes = self.rsi_engine.optimize_with_rsi(final_ast)
+        final_ast = rsi_optimized_ast
+        passes.extend(rsi_passes)
+
         # Stage 4: Multi-Target Compilation
         qiskit_code = QiskitTranspiler.transpile(final_ast)
         openqasm_code = OpenQASMTranspiler.transpile(final_ast)
@@ -63,6 +78,14 @@ class QuantumAgent:
         # Stage 5: Diagrams & Topological Metrics
         ascii_diagram = final_ast.to_ascii_diagram()
         stats = final_ast.get_statistics()
+
+        # Stage 5b: REA Decompilation & Reverse Engineering Analysis
+        rea_report = self.rea_engine.reverse_engineer(final_ast)
+
+        # Stage 5c: Fault-Tolerant Surface Code & Lattice Surgery Estimation
+        ft_report = FaultTolerantResourceEstimator.estimate(
+            final_ast, platform_key="superconducting", target_logical_error=1e-6
+        )
 
         # Stage 6: Quantum Simulation & Live Hardware Gateway Execution
         sim_res = self.engine.execute(final_ast, shots=1024, seed=42)
@@ -97,6 +120,9 @@ class QuantumAgent:
             f"{stats['num_qubits']} qubits, depth {stats['depth']}, and {stats['total_gates']} total gates. "
             f"Conway 2D cellular automaton placed qubits on a {conway_telemetry['grid_dimensions']} QPU lattice "
             f"({conway_telemetry['cellular_generations_computed']} cellular generations computed). "
+            f"Raven RSI verified unitary equivalence and applied {len(rsi_passes)} self-improvement passes. "
+            f"REA Decompiler confirmed semantic intent: '{rea_report.inferred_intent}'. "
+            f"Surface Code planner estimated d={ft_report.code_distance_d} ({ft_report.total_physical_qubits} physical qubits). "
             f"Dispatched live to {hw_res.backend_provider} ({hw_res.backend_name}) with Hardware Job ID: '{hw_res.job_id}' "
             f"[Status: {hw_res.status}, Mode: {hw_res.execution_mode}, Readout: 1,024 shots]. "
             f"Web 4.0 decentralized receipt signed with NIST FIPS 204 (ML-DSA-65) and encapsulated "
@@ -134,7 +160,37 @@ class QuantumAgent:
             "pqc_assessment": pqc_eval,
             "telemetry": rec,
             "status": "SIMULATION_EXEC_VERIFIED",
+            # Next-gen extensions surpassing Classiq:
+            "rea_decompilation": rea_report.to_dict(),
+            "rsi_telemetry": {
+                "active_rules": len(self.rsi_engine.discovered_rules),
+                "generation_count": self.rsi_engine.generation_count,
+                "best_fitness": self.rsi_engine.best_fitness,
+            },
+            "fault_tolerance_estimate": ft_report.to_dict(),
         }
+
+    # ==========================================
+    # Next-Gen Agentic & Synthesis Helper API
+    # ==========================================
+
+    def reverse_engineer(self, circuit_or_qasm: Any) -> Dict[str, Any]:
+        """REA: Reverse engineer any circuit, QASM string, or Classiq JSON model."""
+        report = self.rea_engine.reverse_engineer(circuit_or_qasm)
+        return report.to_dict()
+
+    def run_rsi_cycle(self, iterations: int = 3) -> Dict[str, Any]:
+        """Raven AI: Run a recursive self-improvement evolutionary optimization cycle."""
+        return self.rsi_engine.run_rsi_cycle(iterations=iterations)
+
+    def estimate_fault_tolerance(self, ast: QuantumAST, platform: str = "superconducting") -> Dict[str, Any]:
+        """Estimate surface code distance, lattice surgery patches, and physical qubit requirements."""
+        report = FaultTolerantResourceEstimator.estimate(ast, platform_key=platform)
+        return report.to_dict()
+
+    def synthesize_qmod(self, model: QmodModel) -> Tuple[QuantumAST, Dict[str, Any]]:
+        """Synthesize a high-level declarative Qmod model into a QuantumAST."""
+        return self.qmod_engine.synthesize(model)
 
     def _build_semantic_ast(self, p: str, num_qubits: int) -> QuantumAST:
         """Constructs an AST based on natural language keywords."""

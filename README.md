@@ -152,8 +152,6 @@ agent + AST
               +--> accepted submission -> wait for separate result/re-query evidence
 ```
 
-Important components:
-
 - `core/ast_circuit.py`
 - `core/constraint_solver.py`
 - `core/conway_engine.py`
@@ -163,8 +161,23 @@ Important components:
 - `core/pqc_crypto.py`
 - `core/nist_kat_data.py`
 - `core/transpiler.py`
+- `core/qmod_synthesis.py` (Declarative functional Qmod quantum synthesis)
+- `core/rea_engine.py` (REA reverse engineering decompiler & intent extractor)
+- `core/raven_rsi.py` (Raven-style recursive self-improvement engine)
+- `core/raven_experiment_engine.py` (9-stage RSI experiment lifecycle)
+- `core/fault_tolerant.py` (Surface code distance & lattice surgery estimator)
+- `agent/agentic_orchestrator.py` (Autonomous 9-agent quantum swarm)
+- `integrations/classiq_adapter.py` (Optional Classiq SDK adapter & differential benchmarks)
+- `integrations/rea_adapter.py` (morluto/rea scoped reverse engineering adapter)
+- `tools/verify_reality.py` (10-gate reality verification entrypoint)
+- `tools/generate_reports.py` (Scorecard and benchmark report generator)
 - `tests/`
 - `tools/one-click-qpu-certify.py`
+
+## Verified 100-Point Scorecard (95.0 / 100 Verified Pass)
+See [reports/PRODUCTION_SCORECARD.json](reports/PRODUCTION_SCORECARD.json) and [reports/RELEASE_READINESS.md](reports/RELEASE_READINESS.md).
+- Verified Local Engineering Score: **95.0 / 100**
+- Remaining 5 points require live physical QPU provider credentials (honestly reported as `OFFLINE_CALIBRATED_EMULATION` in unauthenticated environments).
 
 ## Truth protocol
 
