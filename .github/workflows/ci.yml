@@ -63,7 +63,7 @@ jobs:
         fi
 
     - name: Upload QPU Certification Evidence Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: qpu-certification-evidence
         path: artifacts/qpu-certification/
