@@ -1,4 +1,4 @@
 # Optional Amazon Braket integration for QMoosa-PQS.
 # Keep separate from requirements.txt so core CI stays dependency-light.
-amazon-braket-sdk>=1.35.1
+amazon-braket-sdk>=1.127.8
 amazon-braket-algorithm-library
